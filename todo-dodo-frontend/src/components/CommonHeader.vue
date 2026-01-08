@@ -6,7 +6,7 @@ import { RouterLink } from 'vue-router'
   <header class="common-header">
     <div class="header-content">
       <nav class="nav-links">
-        <RouterLink to="/" class="nav-item">Calendar</RouterLink>
+        <RouterLink to="/calendar" class="nav-item">Calendar</RouterLink>
         <RouterLink to="/todo" class="nav-item">Todo</RouterLink>
         <RouterLink to="/workflow" class="nav-item">Workflow</RouterLink>
       </nav>

@@ -7,8 +7,8 @@ import { todoRoutes } from "@/feature/todo/router.js"
 const router = createRouter({
     history: createWebHistory(),
     routes: [
-        ...calendarRoutes,
         ...loginRoutes,
+        ...calendarRoutes,
         ...statisticsRoutes,
         ...todoRoutes
     ],

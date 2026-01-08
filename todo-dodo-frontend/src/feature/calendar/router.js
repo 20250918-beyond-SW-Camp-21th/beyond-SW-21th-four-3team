@@ -3,7 +3,7 @@ import CalendarView from "@/feature/calendar/views/CalendarView.vue";
 
 export const calendarRoutes = [
     {
-        path: '/',
+        path: '/calendar',
         name: 'calendar',
         component: CalendarView
     }
