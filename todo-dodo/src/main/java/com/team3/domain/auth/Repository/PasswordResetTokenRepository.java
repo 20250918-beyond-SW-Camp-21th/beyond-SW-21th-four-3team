@@ -1,6 +1,6 @@
 package com.team3.domain.auth.Repository;
 
-import com.guincard.penghyunsuk.core.domain.auth.entity.PasswordResetToken;
+import com.team3.domain.auth.entity.PasswordResetToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,9 +1,10 @@
 package com.team3.domain.auth.controller;
 
-import com.guincard.penghyunsuk.core.api.auth.dto.request.PasswordResetConfirmRequest;
-import com.guincard.penghyunsuk.core.api.auth.dto.request.PasswordResetRequest;
-import com.guincard.penghyunsuk.core.domain.auth.service.PasswordResetService;
-import com.guincard.penghyunsuk.core.support.response.ApiResult;
+
+import com.team3.common.response.ApiResult;
+import com.team3.domain.auth.dto.request.PasswordResetConfirmRequest;
+import com.team3.domain.auth.dto.request.PasswordResetRequest;
+import com.team3.domain.auth.service.PasswordResetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

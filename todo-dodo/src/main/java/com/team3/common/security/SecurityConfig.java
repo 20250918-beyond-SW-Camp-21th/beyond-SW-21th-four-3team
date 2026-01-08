@@ -1,8 +1,7 @@
 package com.team3.common.security;
 
-import com.guincard.penghyunsuk.core.support.error.RestAccessDeniedHandler;
-import com.guincard.penghyunsuk.core.support.error.RestAuthenticationEntryPoint;
-import com.guincard.penghyunsuk.infra.util.JwtTokenProvider;
+import com.team3.common.error.RestAccessDeniedHandler;
+import com.team3.common.error.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,12 +1,13 @@
 package com.team3.domain.auth.controller;
 
-import com.guincard.penghyunsuk.core.api.auth.dto.request.LoginRequest;
-import com.guincard.penghyunsuk.core.api.auth.dto.request.RefreshRequest;
-import com.guincard.penghyunsuk.core.api.auth.dto.request.SignupRequest;
-import com.guincard.penghyunsuk.core.api.auth.dto.response.TokenResponse;
-import com.guincard.penghyunsuk.core.domain.auth.service.AuthService;
-import com.guincard.penghyunsuk.core.domain.auth.service.UserService;
-import com.guincard.penghyunsuk.core.support.response.ApiResult;
+
+import com.team3.common.response.ApiResult;
+import com.team3.domain.auth.dto.request.LoginRequest;
+import com.team3.domain.auth.dto.request.RefreshRequest;
+import com.team3.domain.auth.dto.request.SignupRequest;
+import com.team3.domain.auth.dto.response.TokenResponse;
+import com.team3.domain.auth.service.AuthService;
+import com.team3.domain.auth.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

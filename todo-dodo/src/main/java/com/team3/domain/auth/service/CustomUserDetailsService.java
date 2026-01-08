@@ -1,7 +1,8 @@
 package com.team3.domain.auth.service;
 
-import com.guincard.penghyunsuk.core.domain.auth.Repository.UserRepository;
-import com.guincard.penghyunsuk.core.domain.auth.entity.User;
+
+import com.team3.domain.auth.Repository.UserRepository;
+import com.team3.domain.auth.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -1,14 +1,15 @@
 package com.team3.domain.auth.service;
 
-import com.guincard.penghyunsuk.core.api.auth.dto.request.LoginRequest;
-import com.guincard.penghyunsuk.core.api.auth.dto.response.TokenResponse;
-import com.guincard.penghyunsuk.core.domain.auth.Repository.RefreshTokenRepository;
-import com.guincard.penghyunsuk.core.domain.auth.Repository.UserRepository;
-import com.guincard.penghyunsuk.core.domain.auth.entity.RefreshToken;
-import com.guincard.penghyunsuk.core.domain.auth.entity.User;
-import com.guincard.penghyunsuk.core.support.error.CoreException;
-import com.guincard.penghyunsuk.core.support.error.ErrorCode;
-import com.guincard.penghyunsuk.infra.util.JwtTokenProvider;
+
+import com.team3.common.error.CoreException;
+import com.team3.common.error.ErrorCode;
+import com.team3.common.security.JwtTokenProvider;
+import com.team3.domain.auth.Repository.RefreshTokenRepository;
+import com.team3.domain.auth.Repository.UserRepository;
+import com.team3.domain.auth.dto.request.LoginRequest;
+import com.team3.domain.auth.dto.response.TokenResponse;
+import com.team3.domain.auth.entity.RefreshToken;
+import com.team3.domain.auth.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,6 +1,7 @@
 package com.team3.domain.auth.Repository;
 
-import com.guincard.penghyunsuk.core.domain.auth.entity.User;
+
+import com.team3.domain.auth.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
