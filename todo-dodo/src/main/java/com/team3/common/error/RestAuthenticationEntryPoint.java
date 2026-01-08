@@ -1,8 +1,7 @@
 package com.team3.common.error;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.guincard.penghyunsuk.core.support.error.ErrorCode;
-import com.guincard.penghyunsuk.core.support.response.ApiResult;
+import com.team3.common.response.ApiResult;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
