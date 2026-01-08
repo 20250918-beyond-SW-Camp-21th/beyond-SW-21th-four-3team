@@ -74,8 +74,11 @@ const isSameDate = (date1, date2) => {
          date1.getFullYear() === date2.getFullYear()
 }
 
+const emit = defineEmits(['selectDate'])
+
 const selectDate = (date) => {
   selectedDate.value = date
+  emit('selectDate', date)
 }
 
 const getEventsForDate = (date) => {
