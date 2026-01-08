@@ -1,7 +1,7 @@
 package com.team3.common.security;
 
-import com.guincard.penghyunsuk.core.support.error.CoreException;
-import com.guincard.penghyunsuk.core.support.error.ErrorCode;
+import com.team3.common.error.CoreException;
+import com.team3.common.error.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

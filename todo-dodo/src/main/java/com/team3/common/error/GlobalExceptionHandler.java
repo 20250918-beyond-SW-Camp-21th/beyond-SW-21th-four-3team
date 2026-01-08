@@ -1,7 +1,8 @@
 package com.team3.common.error;
 
 
-import com.guincard.penghyunsuk.core.support.response.ApiResult;
+
+import com.team3.common.response.ApiResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -20,24 +21,6 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ApiResult<Void>> handleBusinessException(CoreException e) {
         log.warn("BusinessException: {}", e.getMessage());
         ErrorCode errorCode = e.getErrorCode();
-        return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ApiResult.error(errorCode.getCode(), e.getMessage()));
-    }
-
-    @ExceptionHandler(UpstreamRateLimitedException.class)
-    protected ResponseEntity<ApiResult<Void>> handleUpstreamRateLimitedException(UpstreamRateLimitedException e) {
-        log.warn("UpstreamRateLimitedException: {}", e.getMessage());
-        ErrorCode errorCode = ErrorCode.UPSTREAM_RATE_LIMITED;
-        return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ApiResult.error(errorCode.getCode(), e.getMessage()));
-    }
-
-    @ExceptionHandler(UpstreamServiceException.class)
-    protected ResponseEntity<ApiResult<Void>> handleUpstreamServiceException(UpstreamServiceException e) {
-        log.warn("UpstreamServiceException: {}", e.getMessage());
-        ErrorCode errorCode = ErrorCode.UPSTREAM_SERVICE_UNAVAILABLE;
         return ResponseEntity
                 .status(errorCode.getStatus())
                 .body(ApiResult.error(errorCode.getCode(), e.getMessage()));

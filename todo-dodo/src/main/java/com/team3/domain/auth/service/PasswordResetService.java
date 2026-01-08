@@ -1,13 +1,14 @@
 package com.team3.domain.auth.service;
 
 
-import com.guincard.penghyunsuk.core.api.auth.dto.request.PasswordResetConfirmRequest;
-import com.guincard.penghyunsuk.core.api.auth.dto.request.PasswordResetRequest;
-import com.guincard.penghyunsuk.core.domain.auth.Repository.PasswordResetTokenRepository;
-import com.guincard.penghyunsuk.core.domain.auth.Repository.RefreshTokenRepository;
-import com.guincard.penghyunsuk.core.domain.auth.Repository.UserRepository;
-import com.guincard.penghyunsuk.core.domain.auth.entity.PasswordResetToken;
-import com.guincard.penghyunsuk.core.domain.auth.entity.User;
+
+import com.team3.domain.auth.Repository.PasswordResetTokenRepository;
+import com.team3.domain.auth.Repository.RefreshTokenRepository;
+import com.team3.domain.auth.Repository.UserRepository;
+import com.team3.domain.auth.dto.request.PasswordResetConfirmRequest;
+import com.team3.domain.auth.dto.request.PasswordResetRequest;
+import com.team3.domain.auth.entity.PasswordResetToken;
+import com.team3.domain.auth.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

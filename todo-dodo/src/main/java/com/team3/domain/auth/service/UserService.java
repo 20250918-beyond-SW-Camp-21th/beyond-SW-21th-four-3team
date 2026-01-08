@@ -1,10 +1,11 @@
 package com.team3.domain.auth.service;
 
-import com.guincard.penghyunsuk.core.api.auth.dto.request.SignupRequest;
-import com.guincard.penghyunsuk.core.domain.auth.Repository.UserRepository;
-import com.guincard.penghyunsuk.core.domain.auth.entity.User;
-import com.guincard.penghyunsuk.core.support.error.CoreException;
-import com.guincard.penghyunsuk.core.support.error.ErrorCode;
+
+import com.team3.common.error.CoreException;
+import com.team3.common.error.ErrorCode;
+import com.team3.domain.auth.Repository.UserRepository;
+import com.team3.domain.auth.dto.request.SignupRequest;
+import com.team3.domain.auth.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
