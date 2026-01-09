@@ -19,6 +19,8 @@ import { RouterView } from 'vue-router'
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-color: #e0e0e0; /* Grey page background */
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; /* Modern font fallback */
 }
 
 main {

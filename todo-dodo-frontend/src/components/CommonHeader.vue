@@ -20,13 +20,13 @@ import { RouterLink } from 'vue-router'
 <style scoped>
 .common-header {
   width: 100%;
-  height: 60px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
+  height: 80px;
+  background-color: #424242; /* Dark Grey Background */
+  border-bottom: 1px solid #333;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 .header-content {
@@ -40,19 +40,34 @@ import { RouterLink } from 'vue-router'
 
 .nav-links {
   display: flex;
-  gap: 30px;
+  gap: 10px; /* Reduced gap as tabs might touch or be close */
+  flex-grow: 1;
+  justify-content: center;
+  height: 100%;
+  align-items: flex-end; /* Align tabs to bottom if needed, or center */
 }
 
 .nav-item {
   text-decoration: none;
-  color: #333;
-  font-size: 16px;
-  font-weight: 500;
-  transition: color 0.2s ease;
+  color: #ffffff; /* White text */
+  font-size: 1.3rem; /* Large */
+  font-weight: 700; /* Bold */
+  padding: 12px 30px;
+  border-radius: 12px 12px 0 0; /* Tab shape: Top rounded */
+  transition: all 0.2s ease;
+  margin-bottom: -1px; /* Align with bottom border if desired */
+  border: 1px solid transparent;
 }
 
 .nav-item:hover {
-  color: #007bff;
+  background-color: rgba(255, 255, 255, 0.1); /* Subtle hover on dark */
+  color: #fff;
+}
+
+.router-link-active {
+  background-color: #e0e0e0; /* Light Grey matching page background (or #f5f5f5 as requested) */
+  color: #212121; /* Black text */
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
 }
 
 .user-profile {
@@ -61,18 +76,18 @@ import { RouterLink } from 'vue-router'
 }
 
 .user-name {
-  background: none;
-  border: none;
-  font-size: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #333;
+  color: #ffffff;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border-radius: 20px; /* Pill shape */
   transition: background-color 0.2s ease;
 }
 
 .user-name:hover {
-  background-color: #f5f5f5;
+  background-color: rgba(255, 255, 255, 0.3);
 }
 </style>

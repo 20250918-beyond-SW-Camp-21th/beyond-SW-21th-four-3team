@@ -1,14 +1,23 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { todoApi } from '../api.js'
+import { useTodoStore } from '@/stores/todoStore'
 
 const router = useRouter()
+const store = useTodoStore()
+
 const title = ref('')
 const content = ref('')
+const selectedDate = ref(new Date().toISOString().substr(0, 10))
 
 const handleSubmit = async () => {
-    await todoApi.createTodo({ title: title.value, content: content.value })
+    if (!title.value.trim()) return;
+    
+    await store.addTodo({ 
+        title: title.value, 
+        content: content.value,
+        date: new Date(selectedDate.value) // Ensure date object or ISO string based on backend/mock expectation
+    })
     router.push('/todo')
 }
 
@@ -25,8 +34,11 @@ const handleCancel = () => {
         </div>
         
         <div class="form-group">
-            <input v-model="title" type="text" placeholder="Title" class="input-title" />
-            <div class="meta-info">User Name | 2026-01-08</div>
+            <div class="input-row">
+                <input v-model="title" type="text" placeholder="Title" class="input-title" />
+                <input v-model="selectedDate" type="date" class="input-date" />
+            </div>
+            <div class="meta-info">User Name</div>
         </div>
         
         <div class="form-group">
@@ -55,6 +67,7 @@ const handleCancel = () => {
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     width: 100%;
     max-width: 800px;
+    border: 1px solid #f0f0f0;
 }
 
 .write-header {
@@ -63,57 +76,101 @@ const handleCancel = () => {
     padding-bottom: 1rem;
 }
 
+.write-header h3 {
+    margin: 0;
+    color: #212121;
+}
+
 .form-group {
     margin-bottom: 1.5rem;
 }
 
-.input-title {
-    width: 100%;
-    font-size: 1.5rem;
-    padding: 10px;
-    border: none;
+.input-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
     border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.input-title {
+    flex: 1;
+    font-size: 1.5rem;
+    padding: 10px 0;
+    border: none;
     outline: none;
+    color: #212121;
+    font-weight: 600;
+}
+
+.input-date {
+    padding: 8px 12px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    color: #424242;
+    font-size: 1rem;
+    outline: none;
+    background-color: #fafafa;
 }
 
 .meta-info {
-    color: #888;
+    color: #9e9e9e;
     font-size: 0.9rem;
-    margin-top: 5px;
+    margin-top: 10px;
 }
 
 .input-content {
     width: 100%;
     min-height: 300px;
-    padding: 10px;
+    padding: 15px;
     border: 1px solid #eee;
     border-radius: 8px;
     resize: vertical;
     font-size: 1rem;
     outline: none;
+    background-color: #fafafa;
+    color: #424242;
+    line-height: 1.6;
+}
+
+.input-content:focus {
+    background-color: #fff;
+    border-color: #bdbdbd;
 }
 
 .button-group {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 12px;
 }
 
 .btn {
-    padding: 10px 20px;
+    padding: 10px 24px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s;
 }
 
 .cancel-btn {
     background-color: #f5f5f5;
-    color: #333;
+    color: #757575;
+}
+
+.cancel-btn:hover {
+    background-color: #e0e0e0;
+    color: #424242;
 }
 
 .save-btn {
-    background-color: #6200ea;
+    background-color: #212121;
     color: white;
+}
+
+.save-btn:hover {
+    background-color: #424242;
 }
 </style>
