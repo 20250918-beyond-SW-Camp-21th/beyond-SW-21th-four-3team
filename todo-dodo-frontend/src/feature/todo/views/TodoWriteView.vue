@@ -9,6 +9,7 @@ const store = useTodoStore()
 const title = ref('')
 const content = ref('')
 const selectedDate = ref(new Date().toISOString().substr(0, 10))
+const selectedColor = ref('#fafafa')
 
 const handleSubmit = async () => {
     if (!title.value.trim()) return;
@@ -16,7 +17,8 @@ const handleSubmit = async () => {
     await store.addTodo({ 
         title: title.value, 
         content: content.value,
-        date: new Date(selectedDate.value) // Ensure date object or ISO string based on backend/mock expectation
+        date: new Date(selectedDate.value),
+        color: selectedColor.value
     })
     router.push('/todo')
 }
@@ -38,6 +40,17 @@ const handleCancel = () => {
                 <input v-model="title" type="text" placeholder="Title" class="input-title" />
                 <input v-model="selectedDate" type="date" class="input-date" />
             </div>
+            
+            <div class="color-picker-row">
+                <div 
+                    v-for="color in ['#ffebee', '#fff3e0', '#fffde7', '#e8f5e9', '#e3f2fd', '#f3e5f5', '#fafafa']" 
+                    :key="color"
+                    class="color-circle"
+                    :style="{ backgroundColor: color, borderColor: selectedColor === color ? '#212121' : '#e0e0e0' }"
+                    @click="selectedColor = color"
+                ></div>
+            </div>
+
             <div class="meta-info">User Name</div>
         </div>
         
@@ -54,123 +67,5 @@ const handleCancel = () => {
 </template>
 
 <style scoped>
-.todo-write-view {
-    display: flex;
-    justify-content: center;
-    padding: 40px;
-}
-
-.write-card {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    width: 100%;
-    max-width: 800px;
-    border: 1px solid #f0f0f0;
-}
-
-.write-header {
-    margin-bottom: 2rem;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 1rem;
-}
-
-.write-header h3 {
-    margin: 0;
-    color: #212121;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.input-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
-}
-
-.input-title {
-    flex: 1;
-    font-size: 1.5rem;
-    padding: 10px 0;
-    border: none;
-    outline: none;
-    color: #212121;
-    font-weight: 600;
-}
-
-.input-date {
-    padding: 8px 12px;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    color: #424242;
-    font-size: 1rem;
-    outline: none;
-    background-color: #fafafa;
-}
-
-.meta-info {
-    color: #9e9e9e;
-    font-size: 0.9rem;
-    margin-top: 10px;
-}
-
-.input-content {
-    width: 100%;
-    min-height: 300px;
-    padding: 15px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    resize: vertical;
-    font-size: 1rem;
-    outline: none;
-    background-color: #fafafa;
-    color: #424242;
-    line-height: 1.6;
-}
-
-.input-content:focus {
-    background-color: #fff;
-    border-color: #bdbdbd;
-}
-
-.button-group {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.btn {
-    padding: 10px 24px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-
-.cancel-btn {
-    background-color: #f5f5f5;
-    color: #757575;
-}
-
-.cancel-btn:hover {
-    background-color: #e0e0e0;
-    color: #424242;
-}
-
-.save-btn {
-    background-color: #212121;
-    color: white;
-}
-
-.save-btn:hover {
-    background-color: #424242;
-}
+@import '../styles/todoWriteView.css';
 </style>
