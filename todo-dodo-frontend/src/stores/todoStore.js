@@ -31,11 +31,32 @@ export const useTodoStore = () => {
     };
 
     const addTodo = async (todoData) => {
+        // Mock Priority Logic
+        const priorities = ['High', 'Medium', 'Low'];
+        const randomPriority = priorities[Math.floor(Math.random() * priorities.length)];
+
+        const { title, content, startDate, endDate, color } = todoData;
+
+        const newTodo = {
+            id: Date.now(), // Simple ID generation
+            title,
+            content,
+            date: startDate, // Map startDate to date for compatibility with existing Calendar/Statistics logic
+            startDate,
+            endDate,
+            color, // Keep color support just in case
+            status: 'Todo',
+            priority: randomPriority
+        };
+
         try {
-            const newTodo = await todoApi.create(todoData);
-            // Optimistic update or refetch. Here we just push since api returns new obj
+            // Optimistic update
             state.todos.push(newTodo);
+            // API call
+            await todoApi.create(newTodo);
         } catch (err) {
+            // Revert optimistic update on failure
+            state.todos = state.todos.filter(t => t.id !== newTodo.id);
             console.error('Failed to add todo', err);
         }
     };

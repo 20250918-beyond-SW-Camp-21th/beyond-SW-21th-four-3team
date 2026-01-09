@@ -49,16 +49,28 @@ const deleteTodo = async () => {
             <div 
                 v-for="todo in todos" 
                 :key="todo.id" 
-                class="todo-item" 
-                :class="{ 'active': selectedTodo?.id === todo.id }"
+                class="todo-item"
+                :class="{ 'active': selectedTodo?.id === todo.id, 'completed': todo.status === 'Done' }"
                 @click="goToDetail(todo.id)"
             >
-                <div class="todo-content">
+                <div class="todo-item-left">
+                    <!-- Priority Indicator -->
+                    <div 
+                        class="priority-indicator" 
+                        :class="{
+                            'priority-high': todo.priority === 'High',
+                            'priority-medium': todo.priority === 'Medium',
+                            'priority-low': !todo.priority || todo.priority === 'Low'
+                        }"
+                    ></div>
                     <span class="todo-title">{{ todo.title }}</span>
                 </div>
-                <!-- <div class="todo-actions">
-                    <button class="icon-btn">📝</button> 
-                </div> -->
+                
+                <div class="checkbox-wrapper" @click.stop="store.toggleTodoStatus(todo.id)">
+                    <div class="custom-checkbox">
+                        <span v-if="todo.status === 'Done'">✔</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -80,20 +92,27 @@ const deleteTodo = async () => {
                     
                     <div class="date-time-row">
                         <div class="input-wrapper">
-                            <label>Date</label>
-                            <select class="custom-select">
-                                <option>{{ new Date(selectedTodo.date).toLocaleDateString() }}</option>
-                            </select>
+                            <label>Start Date</label>
+                            <div class="custom-select" style="width: auto; min-width: 140px;">
+                                {{ selectedTodo.startDate ? new Date(selectedTodo.startDate).toLocaleString() : new Date(selectedTodo.date).toLocaleDateString() }}
+                            </div>
                         </div>
                         <div class="input-wrapper">
-                            <label>time</label>
-                            <select class="custom-select">
-                                <option>Value</option>
-                            </select>
+                            <label>End Date</label>
+                            <div class="custom-select" style="width: auto; min-width: 140px;">
+                                {{ selectedTodo.endDate ? new Date(selectedTodo.endDate).toLocaleString() : '-' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-wrapper" style="margin-top: 10px;">
+                        <label>Priority</label>
+                        <div style="font-weight: bold; color: #666;">
+                            {{ selectedTodo.priority || 'Low' }}
                         </div>
                     </div>
                     
-                    <button class="delete-btn" @click="deleteTodo">isDelete</button>
+                    <button class="delete-btn" @click="deleteTodo">Delete</button>
                 </div>
             </div>
             

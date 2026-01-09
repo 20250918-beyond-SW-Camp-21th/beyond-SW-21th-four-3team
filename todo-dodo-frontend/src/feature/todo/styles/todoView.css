@@ -40,26 +40,101 @@
 .todo-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 15px;
-    background-color: #f8f9fa;
-    border-left: 4px solid #b388ff;
-    border-radius: 4px;
+    background-color: #f5f5f5;
+    /* Grey default */
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
+    /* Removed border-left: 4px solid ... */
+    border: 1px solid transparent;
 }
 
 .todo-item:hover {
-    transform: translateX(4px);
-    background-color: #f3e5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+    border-color: #eee;
 }
 
 .todo-item.active {
-    background-color: #ede7f6;
-    border-left-color: #6200ea;
+    background-color: #fff;
+    border-color: #212121;
+}
+
+.todo-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+/* Priority Indicator */
+.priority-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.priority-high {
+    background-color: #f44336;
+    /* Red */
+    box-shadow: 0 0 4px rgba(244, 67, 54, 0.4);
+}
+
+.priority-medium {
+    background-color: #4caf50;
+    /* Green */
+    box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
+}
+
+.priority-low {
+    background-color: #bdbdbd;
+    /* Gray */
+}
+
+.todo-title {
+    font-size: 1rem;
+    color: #424242;
+    font-weight: 500;
+}
+
+.todo-item.completed .todo-title {
+    text-decoration: line-through;
+    color: #bdbdbd;
+}
+
+/* Checkbox Style */
+.checkbox-wrapper {
+    padding: 5px;
+    cursor: pointer;
+}
+
+.custom-checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #bdbdbd;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 14px;
+    transition: all 0.2s;
+    background-color: white;
+}
+
+.todo-item.completed .custom-checkbox {
+    background-color: #616161;
+    border-color: #616161;
 }
 
 /* Detail Section */
@@ -130,6 +205,7 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     width: 120px;
+    /* Adjusted width */
     background: white;
 }
 
