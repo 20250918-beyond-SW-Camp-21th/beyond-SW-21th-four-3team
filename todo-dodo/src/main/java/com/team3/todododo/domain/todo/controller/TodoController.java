@@ -21,7 +21,7 @@ public class TodoController {
      /* =========================
        유저별 조회
      ========================= */
-    @GetMapping("/api/v1/todo/me")
+    @GetMapping("/api/todo/me")
     public ApiResult<List<TodoResponse>> me(
             Principal principal
     ) {
@@ -32,7 +32,7 @@ public class TodoController {
     /* =========================
        todo 생성
      ========================= */
-    @PostMapping("/api/v1/todo")
+    @PostMapping("/api/todo")
     public ResponseEntity<ApiResult<Long>> addTodo(
             @RequestBody TodoRequest todoRequest,
             Principal principal
@@ -47,7 +47,7 @@ public class TodoController {
     /* =========================
        todo 수정
      ========================= */
-    @PutMapping("/api/v1/todo/{todoId}")
+    @PutMapping("/api/todo/{todoId}")
     public ResponseEntity<ApiResult<Void>> updateTodo(
             @PathVariable Long todoId,
             @RequestBody TodoRequest todoRequest,
@@ -63,7 +63,7 @@ public class TodoController {
     /* =========================
        todo 삭제
      ========================= */
-    @DeleteMapping("/api/v1/todo/{todoId}")
+    @DeleteMapping("/api/todo/{todoId}")
     public ResponseEntity<ApiResult<Void>> deleteTodo(
             @PathVariable Long todoId,
             Principal principal
@@ -78,7 +78,7 @@ public class TodoController {
     /* =========================
        todo 완료 / 미완료 변경
      ========================= */
-    @PatchMapping("/api/v1/todo/{todoId}/complete")
+    @PatchMapping("/api/todo/{todoId}/complete")
     public ResponseEntity<ApiResult<Void>> changeCompleted(
             @PathVariable Long todoId,
             @RequestParam boolean completed,
