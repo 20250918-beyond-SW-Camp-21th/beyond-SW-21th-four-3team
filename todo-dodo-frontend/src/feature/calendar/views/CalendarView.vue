@@ -1,36 +1,27 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Calendar from '@/components/Calendar.vue'
+import { useTodoStore } from '@/stores/todoStore'
 
+const store = useTodoStore()
 const selectedDate = ref(new Date())
 
-// Mock Todo Data
-const allTodos = ref([
-  { id: 1, title: '팀 회의 준비', date: new Date(2026, 0, 9), completed: false },
-  { id: 2, title: '문서 작성', date: new Date(2026, 0, 9), completed: true },
-  { id: 3, title: '운동하기', date: new Date(2026, 0, 11), completed: false },
-  { id: 4, title: '장보기', date: new Date(2026, 0, 16), completed: false },
-])
+// Initial data fetch
+onMounted(() => {
+  store.fetchTodos()
+})
 
 const handleDateSelect = (date) => {
   selectedDate.value = date
 }
 
-const isSameDate = (date1, date2) => {
-  return date1.getDate() === date2.getDate() &&
-         date1.getMonth() === date2.getMonth() &&
-         date1.getFullYear() === date2.getFullYear()
-}
-
+// Get todos for selected date from store
 const currentTodos = computed(() => {
-  return allTodos.value.filter(todo => isSameDate(todo.date, selectedDate.value))
+  return store.getTodosByDate(selectedDate.value)
 })
 
 const toggleTodo = (id) => {
-  const todo = allTodos.value.find(t => t.id === id)
-  if (todo) {
-    todo.completed = !todo.completed
-  }
+  store.toggleTodoStatus(id)
 }
 
 const formatDate = (date) => {
@@ -55,20 +46,18 @@ const formatDate = (date) => {
           v-for="todo in currentTodos" 
           :key="todo.id" 
           class="todo-item"
-          :class="{ 'completed': todo.completed }"
+          :class="{ 'completed': todo.status === 'Done' }"
         >
           <div class="checkbox-wrapper" @click="toggleTodo(todo.id)">
             <div class="custom-checkbox">
-              <span v-if="todo.completed">✓</span>
+              <span v-if="todo.status === 'Done'">✓</span>
             </div>
           </div>
           <span class="todo-title">{{ todo.title }}</span>
         </div>
       </div>
       
-      <div class="add-todo-placeholder">
-        <button class="add-btn">+ 일정 추가 (Coming Soon)</button>
-      </div>
+      <!-- Add Button Removed as per request -->
     </div>
     
     <div class="calendar-section">

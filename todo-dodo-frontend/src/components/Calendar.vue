@@ -1,19 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useTodoStore } from '@/stores/todoStore'
 
+const store = useTodoStore()
 const currentDate = ref(new Date())
 const selectedDate = ref(new Date())
 
-// Mock events data for visualization
-const events = ref([
-  { date: new Date(2026, 0, 9), color: '#d32f2f' }, // Red dot
-  { date: new Date(2026, 0, 11), color: '#d32f2f' },
-  { date: new Date(2026, 0, 16), color: '#f57c00' }, // Orange dot
-  { date: new Date(2026, 0, 19), color: '#7b1fa2' }, // Purple dot
-  { date: new Date(2026, 0, 23), color: '#f57c00' },
-  { date: new Date(2026, 0, 23), color: '#7b1fa2' }, // Multiple dots
-  { date: new Date(2026, 0, 30), color: '#f57c00' },
-])
+// Use events from store (synced with all other views)
+const events = store.eventsForCalendar
 
 const weekDays = ['일', '월', '화', '수', '목', '금', '토']
 

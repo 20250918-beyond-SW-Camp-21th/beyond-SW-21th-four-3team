@@ -1,13 +1,17 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { statisticsApi } from '../api.js'
+import { onMounted, computed } from 'vue'
+import { useTodoStore } from '@/stores/todoStore'
 
-const stats = ref({ todo: 0, inProgress: 0, done: 0 })
+const store = useTodoStore()
 
-onMounted(async () => {
-    stats.value = await statisticsApi.getStatistics('monthly')
+// If data isn't loaded yet, fetch it (or rely on other views having loaded it, but better safe)
+onMounted(() => {
+    if (store.state.todos.length === 0) {
+        store.fetchTodos()
+    }
 })
 
+const stats = store.statistics
 </script>
 
 <template>
