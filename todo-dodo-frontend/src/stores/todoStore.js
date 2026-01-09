@@ -22,7 +22,16 @@ export const useTodoStore = () => {
     const fetchTodos = async () => {
         state.isLoading = true;
         try {
-            state.todos = await todoApi.fetchAll();
+            const result = await todoApi.fetchAll();
+            // result is ApiResult. Assume result.data is the list.
+            if (result && result.data) {
+                state.todos = result.data.map(t => ({
+                    ...t,
+                    date: t.startDate ? new Date(t.startDate) : new Date(), // Compatibility map
+                    startDate: new Date(t.startDate), // Ensure Date objects for UI handling if needed
+                    endDate: t.endDate ? new Date(t.endDate) : null
+                }));
+            }
         } catch (err) {
             state.error = err.message;
         } finally {
@@ -31,32 +40,75 @@ export const useTodoStore = () => {
     };
 
     const addTodo = async (todoData) => {
-        // Mock Priority Logic
-        const priorities = ['High', 'Medium', 'Low'];
-        const randomPriority = priorities[Math.floor(Math.random() * priorities.length)];
+        const { title, content, startDate, endDate, priority } = todoData;
+        const tempId = Date.now();
 
-        const { title, content, startDate, endDate, color } = todoData;
+        // Prepare Request DTO
+        // Backend expects: startDate (YYYY-MM-DD), startTime (HH:mm:ss), etc.
+        const start = new Date(startDate);
+        const end = new Date(endDate);
 
+        const formatDate = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        const formatTime = (d) => {
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            const seconds = '00';
+            return `${hours}:${minutes}:${seconds}`;
+        };
+
+        const requestDto = {
+            title: title,
+            description: content, // Map content to description
+            startDate: formatDate(start),
+            startTime: formatTime(start),
+            endDate: formatDate(end),
+            endTime: formatTime(end),
+            allday: false,
+            repeatType: 'NONE', // Default
+            priority: (priority || 'MEDIUM').toUpperCase(), // Ensure Enum match
+            completed: false,
+            // daysOfWeek, repeatUntilDate - optional/null
+        };
+
+        // UI Optimistic Object
         const newTodo = {
-            id: Date.now(), // Simple ID generation
+            id: tempId,
             title,
-            content,
-            date: startDate, // Map startDate to date for compatibility with existing Calendar/Statistics logic
-            startDate,
-            endDate,
-            color, // Keep color support just in case
+            content, // description
+            description: content,
+            date: start,
+            startDate: start,
+            endDate: end,
             status: 'Todo',
-            priority: randomPriority
+            priority: priority || 'Medium',
+            completed: false
         };
 
         try {
-            // Optimistic update
             state.todos.push(newTodo);
-            // API call
-            await todoApi.create(newTodo);
+
+            const result = await todoApi.create(requestDto);
+            // Result is ApiResult<Long> -> result.data is the ID
+            const realId = result.data;
+
+            const index = state.todos.findIndex(t => t.id === tempId);
+            if (index !== -1) {
+                // state.todos[index].id = realId; // Direct assignment works on properties usually
+                // But better to replace object or updating ID might be tricky in v-for key
+                // Let's rely on re-fetching or just update ID if Vue handles it well.
+                // Updating ID in list might cause re-render loop if key changes. 
+                // But since it is key, Vue will treat it as new item.
+                // It is safer.
+                state.todos[index] = { ...state.todos[index], id: realId };
+            }
         } catch (err) {
-            // Revert optimistic update on failure
-            state.todos = state.todos.filter(t => t.id !== newTodo.id);
+            state.todos = state.todos.filter(t => t.id !== tempId);
             console.error('Failed to add todo', err);
         }
     };
@@ -64,16 +116,23 @@ export const useTodoStore = () => {
     const toggleTodoStatus = async (id) => {
         const todo = state.todos.find(t => t.id === id);
         if (todo) {
-            // Toggle logic: Todo -> Done, Done -> Todo. (Simplification)
-            const newStatus = todo.status === 'Done' ? 'Todo' : 'Done';
-            // Optimistic UI update
+            const oldStatus = todo.status; // 'Todo' or 'Done' logic
+            const oldCompleted = todo.completed; // boolean logic
+
+            // Toggle
+            const newCompleted = !oldCompleted;
+            const newStatus = newCompleted ? 'Done' : 'Todo';
+
+            // Optimistic
             todo.status = newStatus;
+            todo.completed = newCompleted;
 
             try {
-                await todoApi.update(id, { status: newStatus });
+                await todoApi.changeCompleted(id, newCompleted);
             } catch (err) {
-                // Revert on failure
-                todo.status = todo.status === 'Done' ? 'Todo' : 'Done';
+                // Revert
+                todo.status = oldStatus;
+                todo.completed = oldCompleted;
                 console.error('Failed to toggle status', err);
             }
         }
