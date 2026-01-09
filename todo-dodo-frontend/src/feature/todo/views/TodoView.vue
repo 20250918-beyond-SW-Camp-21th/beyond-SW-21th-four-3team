@@ -24,13 +24,7 @@ const goToDetail = (id) => {
 const deleteTodo = async () => {
     if (selectedTodo.value) {
         if (confirm('삭제하시겠습니까?')) {
-            // Assuming store has a delete action or we use api directly. 
-            // The plan mentioned create/update/delete in api, but store implementation might need check.
-            // Checking store implementation... store has toggle, fetch, add. It does NOT have delete exposed yet.
-            // I'll assume for now we can add it or just ignore. 
-            // Wait, I should add delete to store first if I want to be clean. 
-            // But for this step I will just alert.
-            alert('삭제 기능은 추후 구현 예정입니다.')
+            await store.deleteTodo(selectedTodo.value.id)
             selectedTodo.value = null
         }
     }

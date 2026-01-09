@@ -22,7 +22,21 @@ export const useTodoStore = () => {
     const fetchTodos = async () => {
         state.isLoading = true;
         try {
-            state.todos = await todoApi.fetchAll();
+            const response = await todoApi.fetchAll();
+            // Map Backend DTO to Frontend Model
+            state.todos = response.map(todo => ({
+                id: todo.id,
+                title: todo.title,
+                content: todo.description, // Map description -> content
+                date: todo.startDate,      // Map startDate -> date (for legacy view compatibility)
+                startDate: todo.startDate,
+                startTime: todo.startTime,
+                endDate: todo.endDate,
+                endTime: todo.endTime,
+                priority: todo.priority || 'Low',
+                status: todo.completed ? 'Done' : 'Todo', // Map completed -> status
+                color: todo.completed ? '#4caf50' : '#d32f2f' // optional color logic
+            }));
         } catch (err) {
             state.error = err.message;
         } finally {
@@ -31,51 +45,43 @@ export const useTodoStore = () => {
     };
 
     const addTodo = async (todoData) => {
-        // Mock Priority Logic
-        const priorities = ['High', 'Medium', 'Low'];
-        const randomPriority = priorities[Math.floor(Math.random() * priorities.length)];
-
-        const { title, content, startDate, endDate, color } = todoData;
-
-        const newTodo = {
-            id: Date.now(), // Simple ID generation
-            title,
-            content,
-            date: startDate, // Map startDate to date for compatibility with existing Calendar/Statistics logic
-            startDate,
-            endDate,
-            color, // Keep color support just in case
-            status: 'Todo',
-            priority: randomPriority
-        };
-
         try {
-            // Optimistic update
-            state.todos.push(newTodo);
-            // API call
-            await todoApi.create(newTodo);
+            console.log('Adding todo:', todoData);
+            // API call - Backend handles priority and ID
+            const newTodo = await todoApi.create(todoData);
+            if (newTodo) {
+                state.todos.push(newTodo);
+            }
         } catch (err) {
-            // Revert optimistic update on failure
-            state.todos = state.todos.filter(t => t.id !== newTodo.id);
             console.error('Failed to add todo', err);
+            throw err;
         }
     };
 
     const toggleTodoStatus = async (id) => {
         const todo = state.todos.find(t => t.id === id);
         if (todo) {
-            // Toggle logic: Todo -> Done, Done -> Todo. (Simplification)
             const newStatus = todo.status === 'Done' ? 'Todo' : 'Done';
-            // Optimistic UI update
+            // Optimistic Update
+            const originalStatus = todo.status;
             todo.status = newStatus;
 
             try {
                 await todoApi.update(id, { status: newStatus });
             } catch (err) {
                 // Revert on failure
-                todo.status = todo.status === 'Done' ? 'Todo' : 'Done';
+                todo.status = originalStatus;
                 console.error('Failed to toggle status', err);
             }
+        }
+    };
+
+    const deleteTodo = async (id) => {
+        try {
+            await todoApi.delete(id);
+            state.todos = state.todos.filter(t => t.id !== id);
+        } catch (err) {
+            console.error('Failed to delete todo', err);
         }
     };
 
@@ -154,6 +160,7 @@ export const useTodoStore = () => {
         fetchTodos,
         addTodo,
         toggleTodoStatus,
+        deleteTodo,
         getTodosByDate,
         getStatistics,
         eventsForCalendar,
