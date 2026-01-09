@@ -78,7 +78,47 @@ export const useTodoStore = () => {
         });
     });
 
+    // Statistics Helper
+    const getStatistics = (rangeType, date) => {
+        const targetDate = new Date(date);
+        targetDate.setHours(0, 0, 0, 0);
+
+        const filteredTodos = state.todos.filter(t => {
+            const tDate = new Date(t.date);
+            tDate.setHours(0, 0, 0, 0);
+
+            if (rangeType === 'day') {
+                return tDate.getTime() === targetDate.getTime();
+            } else if (rangeType === 'week') {
+                const day = targetDate.getDay();
+                const diff = targetDate.getDate() - day; // Adjusts so Sunday is day 0
+                const startOfWeek = new Date(targetDate);
+                startOfWeek.setDate(diff);
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+                return tDate >= startOfWeek && tDate <= endOfWeek;
+            } else if (rangeType === 'month') {
+                return tDate.getMonth() === targetDate.getMonth() &&
+                    tDate.getFullYear() === targetDate.getFullYear();
+            }
+            return false;
+        });
+
+        const stats = { todo: 0, inProgress: 0, done: 0 };
+        filteredTodos.forEach(t => {
+            if (t.status === 'Todo') stats.todo++;
+            else if (t.status === 'In Progress') stats.inProgress++;
+            else if (t.status === 'Done') stats.done++;
+        });
+        return stats;
+    };
+
     const statistics = computed(() => {
+        // Default to overall stats for backward compatibility or simple view
+        // But for the view usage, we will likely call getStatistics directly or use a reactive wrapper in the view.
+        // Keeping this as "All Time" stats or removing if unused. 
+        // Let's keep it as is for now, but the View will use the function above.
         const stats = { todo: 0, inProgress: 0, done: 0 };
         state.todos.forEach(t => {
             if (t.status === 'Todo') stats.todo++;
@@ -94,6 +134,7 @@ export const useTodoStore = () => {
         addTodo,
         toggleTodoStatus,
         getTodosByDate,
+        getStatistics,
         eventsForCalendar,
         statistics
     };
