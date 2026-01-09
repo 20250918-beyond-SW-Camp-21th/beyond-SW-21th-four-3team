@@ -1,0 +1,18 @@
+package com.team3.todododo.domain.auth.Repository;
+
+
+import com.team3.todododo.domain.auth.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    Optional<User> findByLoginId(String loginId);   // 로그인 id 로 로그인
+
+    boolean existsByLoginId(String loginId);    // id로 중복체크
+
+    boolean existsByEmail(String email);    // 이메일로 중복체크
+}
