@@ -2,8 +2,6 @@ package com.team3.todododo.domain.todo.controller;
 
 import com.team3.todododo.common.response.ApiResult;
 import com.team3.todododo.common.security.JwtTokenProvider;
-import com.team3.todododo.domain.auth.entity.User;
-import com.team3.todododo.domain.auth.service.AuthService;
 import com.team3.todododo.domain.todo.dto.request.TodoRequest;
 import com.team3.todododo.domain.todo.dto.response.TodoResponse;
 import com.team3.todododo.domain.todo.service.TodoService;
@@ -12,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 // 생성 / 수정 / 삭제 / 완료
 @RestController
@@ -19,16 +18,15 @@ import java.security.Principal;
 public class TodoController {
 
     private final TodoService todoService;
-    private final JwtTokenProvider jwtTokenProvider;
      /* =========================
        유저별 조회
      ========================= */
     @GetMapping("/api/v1/todo/me")
-    public ApiResult<TodoResponse> me(
+    public ApiResult<List<TodoResponse>> me(
             Principal principal
     ) {
         String loginId=principal.getName();
-        return ApiResult.success((TodoResponse) todoService.getTodo(loginId));
+        return ApiResult.success(todoService.getTodo(loginId));
     }
 
     /* =========================

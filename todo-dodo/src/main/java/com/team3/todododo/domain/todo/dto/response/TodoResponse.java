@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -54,4 +56,15 @@ public class TodoResponse {
                 todo.isCompleted()
         );
     }
+
+    public static List<TodoResponse> froms(List<Todo> todoList) {
+        List<TodoResponse> todoResponses = new ArrayList<>();
+
+        for (Todo todo : todoList) {
+            todoResponses.add(from(todo));
+        }
+
+        return todoResponses;
+    }
+
 }

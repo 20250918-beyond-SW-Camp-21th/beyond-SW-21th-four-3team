@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -134,11 +135,14 @@ public class TodoService {
     @Transactional(readOnly = true)
     public List<TodoResponse> getTodo(String loginId) {
 
-        Optional<User> user=userRepository.findByLoginId(loginId);
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        List<TodoResponse> todolist=todoRepository.getTodosByUserId(user.get().getId());
-        return todolist;
+        List<Todo> todoList = todoRepository.getTodosByUserId(user.getId());
+
+        return TodoResponse.froms(todoList);
     }
+
 
     /* =========================
        공통 validation
