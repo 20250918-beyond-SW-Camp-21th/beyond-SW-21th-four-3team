@@ -105,6 +105,68 @@ export const useTodoStore = () => {
         }
     };
 
+    const updateTodo = async (id, todoData) => {
+        try {
+            console.log('Updating todo:', id, todoData);
+
+            // Transform to Backend DTO (Duplicated from addTodo for safety)
+            const dayMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+            const mappedDays = todoData.selectedDays ? todoData.selectedDays.map(i => dayMap[i]) : [];
+
+            const payload = {
+                title: todoData.title,
+                description: todoData.content,
+                startDate: todoData.startDate,
+                startTime: todoData.startTime.length === 5 ? todoData.startTime + ':00' : todoData.startTime, // Append seconds if needed
+                endDate: todoData.endDate,
+                endTime: todoData.endTime.length === 5 ? todoData.endTime + ':00' : todoData.endTime,     // Append seconds if needed
+                allday: todoData.allday || false,
+                priority: todoData.priority ? todoData.priority.toUpperCase() : 'LOW',
+                completed: false, // Keep as false or handle logic if needed. 
+
+                // Repetition Logic
+                repeatType: todoData.isRepeat ? 'WEEKLY' : 'NONE',
+                daysOfWeek: todoData.isRepeat ? mappedDays : [],
+                repeatUntilDate: todoData.isRepeat ? todoData.repeatUntil : null
+            };
+
+            const updatedTodo = await todoApi.update(id, payload);
+            if (updatedTodo) {
+                // Update local state
+                const numericId = Number(id); // Ensure ID is a number for comparison
+                const index = state.todos.findIndex(t => t.id === numericId);
+                if (index !== -1) {
+                    const color = updatedTodo.completed ? '#4caf50' : '#d32f2f';
+                    state.todos[index] = {
+                        id: updatedTodo.id,
+                        title: updatedTodo.title,
+                        content: updatedTodo.description,
+                        date: updatedTodo.startDate,
+                        startDate: updatedTodo.startDate,
+                        startTime: updatedTodo.startTime,
+                        endDate: updatedTodo.endDate,
+                        endTime: updatedTodo.endTime,
+                        priority: updatedTodo.priority ? updatedTodo.priority.charAt(0).toUpperCase() + updatedTodo.priority.slice(1).toLowerCase() : 'Low',
+                        status: updatedTodo.completed ? 'Done' : 'Todo',
+                        color: color,
+                        allday: updatedTodo.allDay,
+                        daysOfWeek: updatedTodo.daysOfWeek,
+                        repeatUntil: updatedTodo.repeatUntilDate
+                    };
+                }
+            }
+        } catch (err) {
+            console.error('Failed to update todo', err);
+            throw err;
+        }
+    };
+
+    // Explicitly fetch data for a specific todo (uses list API as backend lacks single GET)
+    const getTodo = async (id) => {
+        await fetchTodos(); // Ensure fresh data from API
+        return state.todos.find(t => t.id === Number(id));
+    };
+
     const toggleTodoStatus = async (id) => {
         const todo = state.todos.find(t => t.id === id);
         if (todo) {
@@ -207,6 +269,8 @@ export const useTodoStore = () => {
         state,
         fetchTodos,
         addTodo,
+        updateTodo,
+        getTodo,
         toggleTodoStatus,
         deleteTodo,
         getTodosByDate,

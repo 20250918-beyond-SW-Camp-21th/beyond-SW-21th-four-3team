@@ -1,10 +1,15 @@
 <script setup>
-import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, watch, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useTodoStore } from '@/stores/todoStore'
 
 const router = useRouter()
+const route = useRoute()
 const store = useTodoStore()
+
+// Edit Mode Detection
+const isEditMode = computed(() => !!route.params.id)
+const todoId = route.params.id
 
 const title = ref('')
 const content = ref('')
@@ -18,7 +23,6 @@ watch(allday, (newVal) => {
     }
 })
 
-// Initialize with current time, truncated to minutes for datetime-local
 // Initialize with current time
 const now = new Date()
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
@@ -36,6 +40,34 @@ const daysList = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] // 0=Sun, 6=Sat match JS Da
 const selectedDays = ref([]) 
 const repeatUntil = ref('')
 
+// Load Data for Edit
+onMounted(async () => {
+    if (isEditMode.value) {
+        // Fetch data via API (wrapper action)
+        const todo = await store.getTodo(todoId)
+
+        if (todo) {
+            title.value = todo.title
+            content.value = todo.content
+            priority.value = todo.priority 
+            allday.value = todo.allday
+            startDate.value = todo.startDate
+            startTime.value = todo.startTime ? todo.startTime.slice(0, 5) : '00:00'
+            endDate.value = todo.endDate
+            endTime.value = todo.endTime ? todo.endTime.slice(0, 5) : '23:59'
+            
+            if (todo.repeatUntil) {
+                isRepeat.value = true
+                repeatUntil.value = todo.repeatUntil
+                const dayMap = { 'SUNDAY': 0, 'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6 }
+                if (todo.daysOfWeek) {
+                    selectedDays.value = todo.daysOfWeek.map(d => dayMap[d])
+                }
+            }
+        }
+    }
+})
+
 const toggleDay = (index) => {
     if (selectedDays.value.includes(index)) {
         selectedDays.value = selectedDays.value.filter(d => d !== index)
@@ -47,7 +79,8 @@ const toggleDay = (index) => {
 const handleSubmit = async () => {
     if (!title.value.trim()) return;
     
-    await store.addTodo({ 
+    // Construct Todo Data (Shared structure for add/update)
+    const todoData = { 
         title: title.value, 
         content: content.value,
         startDate: startDate.value,
@@ -59,7 +92,14 @@ const handleSubmit = async () => {
         isRepeat: isRepeat.value,
         selectedDays: selectedDays.value,
         repeatUntil: repeatUntil.value
-    })
+    }
+
+    if (isEditMode.value) {
+        await store.updateTodo(todoId, todoData)
+    } else {
+        await store.addTodo(todoData)
+    }
+    
     router.push('/todo')
 }
 
@@ -165,12 +205,13 @@ const handleCancel = () => {
         
         <div class="button-group">
             <button @click="handleCancel" class="btn cancel-btn">Cancel</button>
-            <button @click="handleSubmit" class="btn save-btn">Save</button>
+            <button @click="handleSubmit" class="btn save-btn">{{ isEditMode ? 'Update' : 'Save' }}</button>
         </div>
     </div>
     </div>
-  </div>
+    </div>
 </template>
+
 
 <style scoped>
 @import '../styles/todoWriteView.css';
