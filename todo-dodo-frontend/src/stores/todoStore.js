@@ -47,10 +47,53 @@ export const useTodoStore = () => {
     const addTodo = async (todoData) => {
         try {
             console.log('Adding todo:', todoData);
-            // API call - Backend handles priority and ID
-            const newTodo = await todoApi.create(todoData);
+
+            // Transform to Backend DTO
+            // Input format from datetime-local: "YYYY-MM-DDTHH:mm"
+            const [startDate, startTime] = todoData.startDate.split('T');
+            const [endDate, endTime] = todoData.endDate.split('T');
+
+            // Map frontend day index (0=Sun) to backend Enum
+            const dayMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+            const mappedDays = todoData.selectedDays ? todoData.selectedDays.map(i => dayMap[i]) : [];
+
+            const payload = {
+                title: todoData.title,
+                description: todoData.content,
+                startDate: startDate,
+                startTime: startTime + ':00', // Append seconds
+                endDate: endDate,
+                endTime: endTime + ':00',     // Append seconds
+                allday: todoData.allday || false,
+                // uppercase for backend Enum
+                priority: todoData.priority ? todoData.priority.toUpperCase() : 'LOW',
+                completed: false,
+
+                // Repetition Logic
+                repeatType: todoData.isRepeat ? 'WEEKLY' : 'NONE',
+                daysOfWeek: todoData.isRepeat ? mappedDays : [],
+                repeatUntilDate: todoData.isRepeat ? todoData.repeatUntil : null
+            };
+
+            const newTodo = await todoApi.create(payload);
             if (newTodo) {
-                state.todos.push(newTodo);
+                // Determine color for frontend immediate display
+                const color = newTodo.completed ? '#4caf50' : '#d32f2f';
+
+                // Push to state with frontend mapping
+                state.todos.push({
+                    id: newTodo.id,
+                    title: newTodo.title,
+                    content: newTodo.description,
+                    date: newTodo.startDate,
+                    startDate: newTodo.startDate,
+                    startTime: newTodo.startTime,
+                    endDate: newTodo.endDate,
+                    endTime: newTodo.endTime,
+                    priority: newTodo.priority ? newTodo.priority.charAt(0).toUpperCase() + newTodo.priority.slice(1).toLowerCase() : 'Low',
+                    status: newTodo.completed ? 'Done' : 'Todo',
+                    color: color
+                });
             }
         } catch (err) {
             console.error('Failed to add todo', err);

@@ -29,12 +29,25 @@
 }
 
 .write-btn {
-    background-color: #6200ea;
+    background-color: #81D4FA;
+    /* Pastel Blue */
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s;
+    padding: 0;
+}
+
+.write-btn:hover {
+    background-color: #4FC3F7;
+    /* Slightly darker on hover */
 }
 
 .todo-list {

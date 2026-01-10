@@ -36,7 +36,7 @@ const deleteTodo = async () => {
     <div class="todo-list-container">
         <div class="header-section">
             <h2>TODO</h2>
-            <button @click="goToWrite" class="write-btn">Write</button>
+            <button @click="goToWrite" class="write-btn">+</button>
         </div>
         
         <div class="todo-list">
