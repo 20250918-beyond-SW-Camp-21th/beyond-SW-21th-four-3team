@@ -33,6 +33,9 @@ export const useTodoStore = () => {
                 startTime: todo.startTime,
                 endDate: todo.endDate,
                 endTime: todo.endTime,
+                allday: todo.allDay, // Backend field is allDay
+                daysOfWeek: todo.daysOfWeek,
+                repeatUntil: todo.repeatUntilDate,
                 priority: todo.priority ? todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1).toLowerCase() : 'Low',
                 status: todo.completed ? 'Done' : 'Todo', // Map completed -> status
                 color: todo.completed ? '#4caf50' : '#d32f2f' // optional color logic
@@ -88,6 +91,9 @@ export const useTodoStore = () => {
                     startTime: newTodo.startTime,
                     endDate: newTodo.endDate,
                     endTime: newTodo.endTime,
+                    allday: newTodo.allDay,
+                    daysOfWeek: newTodo.daysOfWeek,
+                    repeatUntil: newTodo.repeatUntilDate,
                     priority: newTodo.priority ? newTodo.priority.charAt(0).toUpperCase() + newTodo.priority.slice(1).toLowerCase() : 'Low',
                     status: newTodo.completed ? 'Done' : 'Todo',
                     color: color

@@ -21,6 +21,58 @@ const goToDetail = (id) => {
     selectedTodo.value = store.state.todos.find(t => t.id === id)
 }
 
+const goToEdit = () => {
+    if (selectedTodo.value) {
+        router.push(`/todo/edit/${selectedTodo.value.id}`)
+    }
+}
+
+const formattedDateInfo = computed(() => {
+    const todo = selectedTodo.value
+    if (!todo) return null
+
+    // Routine Logic
+    if (todo.repeatUntil) {
+        // Mocking day parsing for now since backend returns list of Enums or indices
+        // Assuming todo.daysOfWeek is available, otherwise falling back
+        const days = todo.daysOfWeek ? todo.daysOfWeek.join(', ') : 'Daily'
+        const until = new Date(todo.repeatUntil).toLocaleDateString()
+        const timeRange = todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
+        
+        return {
+            type: 'ROUTINE',
+            text: `Every ${days} until ${until}`,
+            subText: timeRange
+        }
+    }
+
+    // Allday Logic
+    if (todo.allday) {
+        return {
+            type: 'ALLDAY',
+            text: 'All Day',
+            subText: new Date(todo.startDate).toLocaleDateString()
+        }
+    }
+
+    // Normal Logic
+    const startDateText = new Date(todo.startDate).toLocaleDateString()
+    const endDateText = new Date(todo.endDate).toLocaleDateString()
+    
+    let dateDisplay = startDateText
+    if (todo.startDate !== todo.endDate) {
+        dateDisplay = `${startDateText} ~ ${endDateText}`
+    }
+
+    const timeRange = `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
+    
+    return {
+        type: 'NORMAL',
+        text: dateDisplay,
+        subText: timeRange
+    }
+})
+
 const deleteTodo = async () => {
     if (selectedTodo.value) {
         if (confirm('삭제하시겠습니까?')) {
@@ -71,48 +123,63 @@ const deleteTodo = async () => {
     
     <div class="detail-container">
         <div v-if="selectedTodo" class="detail-content">
-            <div class="detail-header-title">TODO 상세정보 보기</div>
             
             <div class="detail-body">
-                <div class="image-placeholder">
-                    <!-- Placeholder Icon -->
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z" fill="#E0E0E0"/>
-                    </svg>
+                <div class="priority-display">
+                    <div 
+                        class="priority-dot-large"
+                        :class="{
+                            'priority-high': selectedTodo.priority === 'High',
+                            'priority-medium': selectedTodo.priority === 'Medium',
+                            'priority-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
+                        }"
+                    >
+                        <span 
+                            class="priority-text"
+                            :class="{
+                                'text-high': selectedTodo.priority === 'High',
+                                'text-medium': selectedTodo.priority === 'Medium',
+                                'text-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
+                            }"
+                        >{{ selectedTodo.priority || 'Low' }}</span>
+                    </div>
                 </div>
                 
                 <div class="info-group">
                     <h1 class="info-title">{{ selectedTodo.title }}</h1>
                     
                     <div class="date-time-row">
-                        <div class="input-wrapper">
-                            <label>Start Date</label>
-                            <div class="custom-select" style="width: auto; min-width: 140px;">
-                                {{ selectedTodo.startDate ? new Date(selectedTodo.startDate).toLocaleString() : new Date(selectedTodo.date).toLocaleDateString() }}
-                            </div>
+                        <!-- Routine Case -->
+                        <div v-if="formattedDateInfo?.type === 'ROUTINE'" class="info-block">
+                            <div class="info-text">{{ formattedDateInfo.text }}</div>
+                            <div class="info-subtext large-time">{{ formattedDateInfo.subText }}</div>
                         </div>
-                        <div class="input-wrapper">
-                            <label>End Date</label>
-                            <div class="custom-select" style="width: auto; min-width: 140px;">
-                                {{ selectedTodo.endDate ? new Date(selectedTodo.endDate).toLocaleString() : '-' }}
-                            </div>
+
+                        <!-- All Day Case -->
+                        <div v-else-if="formattedDateInfo?.type === 'ALLDAY'" class="info-block">
+                            <div class="info-text highlight">{{ formattedDateInfo.text }}</div>
+                            <div class="info-subtext large-time">{{ formattedDateInfo.subText }}</div>
+                        </div>
+
+                        <!-- Normal Case -->
+                        <div v-else class="info-block normal-date">
+                            <div class="info-text">{{ formattedDateInfo?.text }}</div>
+                            <div class="info-subtext large-time">{{ formattedDateInfo?.subText }}</div>
                         </div>
                     </div>
 
-                    <div class="input-wrapper" style="margin-top: 10px;">
-                        <label>Priority</label>
-                        <div style="font-weight: bold; color: #666;">
-                            {{ selectedTodo.priority || 'Low' }}
-                        </div>
-                    </div>
+
                     
-                    <button class="delete-btn" @click="deleteTodo">Delete</button>
+                    <div class="action-buttons">
+                        <button class="edit-btn" @click="goToEdit">Edit</button>
+                        <button class="delete-btn" @click="deleteTodo">Delete</button>
+                    </div>
                 </div>
             </div>
             
             <div class="content-area">
-                <h3 class="content-label">Content</h3>
-                <p class="content-text">{{ selectedTodo.content || '내용이 없습니다.' }}</p>
+                <!-- Label removed -->
+                <p class="content-text">{{ selectedTodo.content || 'No content provided.' }}</p>
             </div>
             
         </div>
