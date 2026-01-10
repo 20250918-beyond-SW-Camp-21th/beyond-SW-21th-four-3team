@@ -55,5 +55,21 @@ export const todoApi = {
             console.error('Error deleting todo:', error);
             throw error;
         }
+    },
+
+    // Toggle todo completion
+    toggleComplete: async (id, isCompleted) => {
+        try {
+            const response = await client.patch(`/todo/${id}/complete`, null, {
+                params: { completed: isCompleted }
+            });
+            if (response.data && response.data.success) {
+                return true;
+            }
+            throw new Error(response.data.message || 'Failed to toggle todo status');
+        } catch (error) {
+            console.error('Error toggling todo status:', error);
+            throw error;
+        }
     }
 };

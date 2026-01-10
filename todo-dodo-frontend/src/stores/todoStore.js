@@ -33,7 +33,7 @@ export const useTodoStore = () => {
                 startTime: todo.startTime,
                 endDate: todo.endDate,
                 endTime: todo.endTime,
-                priority: todo.priority || 'Low',
+                priority: todo.priority ? todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1).toLowerCase() : 'Low',
                 status: todo.completed ? 'Done' : 'Todo', // Map completed -> status
                 color: todo.completed ? '#4caf50' : '#d32f2f' // optional color logic
             }));
@@ -67,7 +67,8 @@ export const useTodoStore = () => {
             todo.status = newStatus;
 
             try {
-                await todoApi.update(id, { status: newStatus });
+                // Use specific PATCH endpoint for toggling status
+                await todoApi.toggleComplete(id, newStatus === 'Done'); // true if Done, false if Todo
             } catch (err) {
                 // Revert on failure
                 todo.status = originalStatus;
