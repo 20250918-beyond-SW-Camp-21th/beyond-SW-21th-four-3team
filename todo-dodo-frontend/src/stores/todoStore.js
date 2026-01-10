@@ -49,9 +49,7 @@ export const useTodoStore = () => {
             console.log('Adding todo:', todoData);
 
             // Transform to Backend DTO
-            // Input format from datetime-local: "YYYY-MM-DDTHH:mm"
-            const [startDate, startTime] = todoData.startDate.split('T');
-            const [endDate, endTime] = todoData.endDate.split('T');
+            // Transform to Backend DTO
 
             // Map frontend day index (0=Sun) to backend Enum
             const dayMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
@@ -60,10 +58,10 @@ export const useTodoStore = () => {
             const payload = {
                 title: todoData.title,
                 description: todoData.content,
-                startDate: startDate,
-                startTime: startTime + ':00', // Append seconds
-                endDate: endDate,
-                endTime: endTime + ':00',     // Append seconds
+                startDate: todoData.startDate,
+                startTime: todoData.startTime + ':00', // Append seconds
+                endDate: todoData.endDate,
+                endTime: todoData.endTime + ':00',     // Append seconds
                 allday: todoData.allday || false,
                 // uppercase for backend Enum
                 priority: todoData.priority ? todoData.priority.toUpperCase() : 'LOW',

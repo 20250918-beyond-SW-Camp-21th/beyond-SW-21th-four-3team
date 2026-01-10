@@ -284,10 +284,10 @@
 }
 
 .repeat-toggle-btn.active {
-    background-color: #D7CCC8;
-    /* Pastel Brown */
+    background-color: #A1887F;
+    /* Lighter Pastel Brown */
     color: white;
-    border-color: #D7CCC8;
+    border-color: #A1887F;
     font-weight: 600;
 }
 
@@ -323,9 +323,18 @@
 }
 
 .day-btn.active {
-    background-color: #90CAF9;
-    /* Pastel Blue */
+    background-color: #A1887F;
+    /* Pastel Brown */
     color: white;
-    border-color: #90CAF9;
+    border-color: #A1887F;
     font-weight: 600;
+}
+
+.split-inputs {
+    display: flex;
+    gap: 10px;
+}
+
+.split-inputs .input-date {
+    flex: 1;
 }

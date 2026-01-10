@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTodoStore } from '@/stores/todoStore'
 
@@ -11,13 +11,24 @@ const content = ref('')
 const priority = ref('Low') // Default Low
 const allday = ref(false)
 
+watch(allday, (newVal) => {
+    if (newVal) {
+        startTime.value = '00:00'
+        endTime.value = '23:59'
+    }
+})
+
 // Initialize with current time, truncated to minutes for datetime-local
+// Initialize with current time
 const now = new Date()
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
-const currentIso = now.toISOString().slice(0, 16)
+const currentIsoDate = now.toISOString().slice(0, 10) // YYYY-MM-DD
+const currentIsoTime = now.toISOString().slice(11, 16) // HH:mm
 
-const startDateTime = ref(currentIso)
-const endDateTime = ref(currentIso)
+const startDate = ref(currentIsoDate)
+const startTime = ref(currentIsoTime)
+const endDate = ref(currentIsoDate)
+const endTime = ref(currentIsoTime)
 
 // Repeat Settings
 const isRepeat = ref(false)
@@ -39,8 +50,10 @@ const handleSubmit = async () => {
     await store.addTodo({ 
         title: title.value, 
         content: content.value,
-        startDate: startDateTime.value, // Pass raw string
-        endDate: endDateTime.value,     // Pass raw string
+        startDate: startDate.value,
+        startTime: startTime.value,
+        endDate: isRepeat.value ? repeatUntil.value : endDate.value,
+        endTime: endTime.value,
         priority: priority.value,
         allday: allday.value,
         isRepeat: isRepeat.value,
@@ -87,29 +100,6 @@ const handleCancel = () => {
                 </div>
             </div>
 
-            <!-- Middle Column: All Day -->
-            <div class="settings-col allday-col">
-                <button 
-                    class="allday-btn" 
-                    :class="{ active: allday }"
-                    @click="allday = !allday"
-                >All Day</button>
-            </div>
-
-            <!-- Right Column: Time Settings -->
-            <div class="settings-col time-col">
-                <div class="datetime-stack">
-                    <div class="datetime-row">
-                        <label>Start</label>
-                        <input v-model="startDateTime" type="datetime-local" class="input-date" :disabled="allday" />
-                    </div>
-                    <div class="datetime-row">
-                        <label>End</label>
-                        <input v-model="endDateTime" type="datetime-local" class="input-date" :disabled="allday" />
-                    </div>
-                </div>
-            </div>
-
             <!-- New Column: Repeat Settings -->
             <div class="settings-col repeat-col">
                 <button 
@@ -138,6 +128,35 @@ const handleCancel = () => {
                     </div>
                 </div>
             </div>
+
+            <!-- Middle Column: All Day -->
+            <div class="settings-col allday-col">
+                <button 
+                    class="allday-btn" 
+                    :class="{ active: allday }"
+                    @click="allday = !allday"
+                >All Day</button>
+            </div>
+
+            <!-- Right Column: Time Settings -->
+            <div class="settings-col time-col">
+                <div class="datetime-stack">
+                    <div class="datetime-row">
+                        <label>Start</label>
+                        <div class="split-inputs">
+                            <input v-model="startDate" type="date" class="input-date" :disabled="allday" />
+                            <input v-model="startTime" type="time" class="input-date" :disabled="allday" />
+                        </div>
+                    </div>
+                    <div class="datetime-row">
+                        <label>End</label>
+                        <div class="split-inputs">
+                            <input v-if="!isRepeat" v-model="endDate" type="date" class="input-date" :disabled="allday" />
+                            <input v-model="endTime" type="time" class="input-date" :disabled="allday" />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="form-group">
@@ -149,7 +168,7 @@ const handleCancel = () => {
             <button @click="handleSubmit" class="btn save-btn">Save</button>
         </div>
     </div>
-  </div>
+    </div>
   </div>
 </template>
 
