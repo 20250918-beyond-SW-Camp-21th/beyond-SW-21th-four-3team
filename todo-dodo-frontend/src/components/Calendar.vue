@@ -68,6 +68,8 @@ const isSameDate = (date1, date2) => {
          date1.getFullYear() === date2.getFullYear()
 }
 
+const realToday = new Date()
+
 const emit = defineEmits(['selectDate'])
 
 const selectDate = (date) => {
@@ -77,6 +79,13 @@ const selectDate = (date) => {
 
 const getEventsForDate = (date) => {
   return events.value.filter(event => isSameDate(event.date, date))
+}
+
+const getPriorityClass = (priority) => {
+  const p = priority ? priority.toLowerCase() : 'low'
+  if (p === 'high') return 'priority-high'
+  if (p === 'medium') return 'priority-medium'
+  return 'priority-low'
 }
 </script>
 
@@ -100,18 +109,24 @@ const getEventsForDate = (date) => {
         :class="{ 
           'current-month': day.isCurrentMonth,
           'other-month': !day.isCurrentMonth,
-          'selected': isSameDate(day.date, selectedDate)
+          'selected': isSameDate(day.date, selectedDate),
+          'is-today': isSameDate(day.date, realToday)
         }"
         @click="selectDate(day.date)"
       >
         <span class="day-number">{{ day.date.getDate() }}</span>
-        <div class="event-dots">
-          <span 
-            v-for="(event, idx) in getEventsForDate(day.date)" 
-            :key="idx" 
-            class="dot"
-            :style="{ backgroundColor: event.color }"
-          ></span>
+        <div class="todo-list-cell">
+          <div 
+            v-for="event in getEventsForDate(day.date)" 
+            :key="event.id" 
+            class="todo-chip"
+            :class="[
+              getPriorityClass(event.priority),
+              { 'is-done': event.status === 'Done' }
+            ]"
+          >
+            <span class="chip-title">{{ event.title }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -121,13 +136,16 @@ const getEventsForDate = (date) => {
 <style scoped>
 .calendar-container {
   width: 100%;
-  max-width: 400px;
+  height: 750px; /* Increased height */
+  /* max-width removed to fill container */
   background: white;
   border-radius: 20px;
-  padding: 20px;
+  padding: 30px; /* Increased padding */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   font-family: 'Inter', sans-serif;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .calendar-header {
@@ -136,28 +154,23 @@ const getEventsForDate = (date) => {
   align-items: center;
   margin-bottom: 20px;
   padding: 0 10px;
+  flex-shrink: 0;
 }
 
-.nav-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: #5f6368;
-  cursor: pointer;
-  padding: 5px 10px;
-}
-
-.month-year {
-  font-size: 18px;
-  font-weight: 700;
-  color: #202124;
-  margin: 0;
-}
+/* ... existing nav-btn, month-year ... */
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  row-gap: 10px;
+  grid-template-rows: auto repeat(6, 1fr); /* Header row + 6 weeks */
+  /* Remove gaps for strict grid lines */
+  row-gap: 0;
+  column-gap: 0;
+  flex: 1; /* Fill remaining height */
+  height: 100%;
+  /* Add outer borders if needed, or handle via cells */
+  border-top: 1px solid #e0e0e0;
+  border-left: 1px solid #e0e0e0;
 }
 
 .weekday {
@@ -165,20 +178,29 @@ const getEventsForDate = (date) => {
   font-size: 14px;
   color: #5f6368;
   font-weight: 500;
-  padding-bottom: 10px;
+  padding: 10px 0; /* Adjust padding */
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #fafafa; /* Slight header background */
 }
 
 .calendar-cell {
-  aspect-ratio: 1;
+  /* aspect-ratio removed to fill height */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center; /* Center day number, but chips align left */
   justify-content: start;
-  padding-top: 5px;
+  padding: 2px; /* Use generic padding */
   cursor: pointer;
-  border-radius: 50%;
+  border-radius: 0; /* Remove radius for grid look */
   position: relative;
   transition: background-color 0.2s;
+  height: 100%;
+  overflow: hidden; /* Hide overflow */
+  
+  /* Borders for grid */
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .calendar-cell:hover {
@@ -186,43 +208,96 @@ const getEventsForDate = (date) => {
 }
 
 .day-number {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   z-index: 1;
+  margin-bottom: 2px;
+  margin-top: 4px; /* Reduced from 12px */
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  
+  /* Flexbox for centering text in circle */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.is-today .day-number {
+  background-color: #9575CD; /* Darker pastel purple */
+  color: white;
+  font-weight: 600;
 }
 
 .current-month {
-  color: #202124;
+  color: #3c4043;
 }
 
 .other-month {
   color: #dadce0;
+  background-color: #fcfcfc; /* Slight tint for other month cells */
 }
 
 .selected {
-  background-color: #1a73e8; /* Default selection color, can change to green/red based on context */
-  color: white;
+  background-color: #D1E3FF; /* Pastel Blue */
+  color: #174ea6; /* Darker Blue for contrast */
 }
 
 .selected:hover {
-  background-color: #1967d2;
+  background-color: #c2d7ff;
 }
 
 .selected .other-month {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(23, 78, 166, 0.5);
 }
 
-.event-dots {
+.todo-list-cell {
+  width: 100%;
   display: flex;
+  flex-direction: column;
   gap: 2px;
-  margin-top: 4px;
-  height: 6px;
+  overflow-y: auto; /* Scroll if too many items */
+  max-height: 100%;
+  padding: 0 2px;
 }
 
-.dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
+/* Scrollbar hiding for cleaner look */
+.todo-list-cell::-webkit-scrollbar {
+    display: none;
+}
+
+.todo-chip {
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: white;
+  width: 100%;
+  text-align: left;
+  line-height: 1.2;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Priority Colors */
+.priority-high {
+  background-color: #ef5350; /* Red */
+}
+
+.priority-medium {
+  background-color: #ff9800; /* Orange */
+}
+
+.priority-low {
+  background-color: #9e9e9e; /* Gray */
+}
+
+/* Done State */
+.is-done {
+  text-decoration: line-through;
+  opacity: 0.6;
+  background-color: #b0bec5; /* Muted gray for done */
 }
 
 /* Custom styles for specific highlight colors seen in reference */

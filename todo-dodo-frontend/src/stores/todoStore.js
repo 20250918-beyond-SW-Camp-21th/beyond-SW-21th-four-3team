@@ -51,52 +51,78 @@ export const useTodoStore = () => {
         try {
             console.log('Adding todo:', todoData);
 
-            // Transform to Backend DTO
-            // Transform to Backend DTO
+            if (!todoData.isRepeat) {
+                // 1. Normal Single Todo
+                const payload = {
+                    title: todoData.title,
+                    description: todoData.content,
+                    startDate: todoData.startDate,
+                    startTime: todoData.startTime + ':00',
+                    endDate: todoData.endDate,
+                    endTime: todoData.endTime + ':00',
+                    allday: todoData.allday || false,
+                    priority: todoData.priority ? todoData.priority.toUpperCase() : 'LOW',
+                    completed: false,
+                    repeatType: 'NONE'
+                };
 
-            // Map frontend day index (0=Sun) to backend Enum
-            const dayMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-            const mappedDays = todoData.selectedDays ? todoData.selectedDays.map(i => dayMap[i]) : [];
+                const newTodo = await todoApi.create(payload);
+                if (newTodo) {
+                    pushTodoToState(newTodo);
+                }
+            } else {
+                // 2. Routine: Generate Individual Todos
+                const start = new Date(todoData.startDate);
+                const end = new Date(todoData.repeatUntil);
+                const dayMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+                const mappedDays = todoData.selectedDays ? todoData.selectedDays.map(i => dayMap[i]) : [];
 
-            const payload = {
-                title: todoData.title,
-                description: todoData.content,
-                startDate: todoData.startDate,
-                startTime: todoData.startTime + ':00', // Append seconds
-                endDate: todoData.endDate,
-                endTime: todoData.endTime + ':00',     // Append seconds
-                allday: todoData.allday || false,
-                // uppercase for backend Enum
-                priority: todoData.priority ? todoData.priority.toUpperCase() : 'LOW',
-                completed: false,
+                // Safety Limit (e.g., 2 years) to prevent infinite loops if data is bad
+                const safetyLimit = new Date(start);
+                safetyLimit.setFullYear(safetyLimit.getFullYear() + 2);
+                const effectiveEnd = end < safetyLimit ? end : safetyLimit;
 
-                // Repetition Logic
-                repeatType: todoData.isRepeat ? 'WEEKLY' : 'NONE',
-                daysOfWeek: todoData.isRepeat ? mappedDays : [],
-                repeatUntilDate: todoData.isRepeat ? todoData.repeatUntil : null
-            };
+                const current = new Date(start);
+                const promises = [];
 
-            const newTodo = await todoApi.create(payload);
-            if (newTodo) {
-                // Determine color for frontend immediate display
-                const color = newTodo.completed ? '#4caf50' : '#d32f2f';
+                while (current <= effectiveEnd) {
+                    const currentDayIndex = current.getDay(); // 0-6
+                    const currentDayName = dayMap[currentDayIndex];
 
-                // Push to state with frontend mapping
-                state.todos.push({
-                    id: newTodo.id,
-                    title: newTodo.title,
-                    content: newTodo.description,
-                    date: newTodo.startDate,
-                    startDate: newTodo.startDate,
-                    startTime: newTodo.startTime,
-                    endDate: newTodo.endDate,
-                    endTime: newTodo.endTime,
-                    allday: newTodo.allDay,
-                    daysOfWeek: newTodo.daysOfWeek,
-                    repeatUntil: newTodo.repeatUntilDate,
-                    priority: newTodo.priority ? newTodo.priority.charAt(0).toUpperCase() + newTodo.priority.slice(1).toLowerCase() : 'Low',
-                    status: newTodo.completed ? 'Done' : 'Todo',
-                    color: color
+                    // Check if current day matches selected days
+                    // todoData.selectedDays indices match dayMap indices IF selectedDays are [0,1..] text or indices?
+                    // todoStore.js previous code: "const mappedDays = todoData.selectedDays ? todoData.selectedDays.map(i => dayMap[i]) : [];"
+                    // So selectedDays are indices.
+
+                    const isMatch = todoData.selectedDays && todoData.selectedDays.includes(currentDayIndex);
+
+                    if (isMatch) {
+                        const dateStr = current.toISOString().split('T')[0];
+
+                        const payload = {
+                            title: todoData.title,
+                            description: todoData.content,
+                            startDate: dateStr,
+                            startTime: todoData.startTime + ':00',
+                            endDate: dateStr, // Single day event for routine instance
+                            endTime: todoData.endTime + ':00',
+                            allday: todoData.allday || false,
+                            priority: todoData.priority ? todoData.priority.toUpperCase() : 'LOW',
+                            completed: false,
+                            repeatType: 'NONE', // Stored as individual non-repeating items
+                            // Keep metadata for UI to recognize it as a routine item
+                            repeatUntilDate: todoData.repeatUntil,
+                            daysOfWeek: mappedDays
+                        };
+                        promises.push(todoApi.create(payload));
+                    }
+                    current.setDate(current.getDate() + 1);
+                }
+
+                // Execute all creations
+                const results = await Promise.all(promises);
+                results.forEach(newTodo => {
+                    if (newTodo) pushTodoToState(newTodo);
                 });
             }
         } catch (err) {
@@ -105,39 +131,52 @@ export const useTodoStore = () => {
         }
     };
 
+    // Helper to push with mapping
+    const pushTodoToState = (newTodo) => {
+        const color = newTodo.completed ? '#4caf50' : '#d32f2f';
+        state.todos.push({
+            id: newTodo.id,
+            title: newTodo.title,
+            content: newTodo.description,
+            date: newTodo.startDate,
+            startDate: newTodo.startDate,
+            startTime: newTodo.startTime,
+            endDate: newTodo.endDate,
+            endTime: newTodo.endTime,
+            allday: newTodo.allDay,
+            priority: newTodo.priority ? newTodo.priority.charAt(0).toUpperCase() + newTodo.priority.slice(1).toLowerCase() : 'Low',
+            status: newTodo.completed ? 'Done' : 'Todo',
+            color: color
+        });
+    }
+
     const updateTodo = async (id, todoData) => {
         try {
             console.log('Updating todo:', id, todoData);
-
-            // Transform to Backend DTO (Duplicated from addTodo for safety)
-            const dayMap = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-            const mappedDays = todoData.selectedDays ? todoData.selectedDays.map(i => dayMap[i]) : [];
+            // NB: Update logic for "Routine" is tricky now that they are individual.
+            // For now, assuming update only affects the single clicked item as per "Individual Todo" nature.
 
             const payload = {
                 title: todoData.title,
                 description: todoData.content,
                 startDate: todoData.startDate,
-                startTime: todoData.startTime.length === 5 ? todoData.startTime + ':00' : todoData.startTime, // Append seconds if needed
+                startTime: todoData.startTime.length === 5 ? todoData.startTime + ':00' : todoData.startTime,
                 endDate: todoData.endDate,
-                endTime: todoData.endTime.length === 5 ? todoData.endTime + ':00' : todoData.endTime,     // Append seconds if needed
+                endTime: todoData.endTime.length === 5 ? todoData.endTime + ':00' : todoData.endTime,
                 allday: todoData.allday || false,
                 priority: todoData.priority ? todoData.priority.toUpperCase() : 'LOW',
-                completed: false, // Keep as false or handle logic if needed. 
-
-                // Repetition Logic
-                repeatType: todoData.isRepeat ? 'WEEKLY' : 'NONE',
-                daysOfWeek: todoData.isRepeat ? mappedDays : [],
-                repeatUntilDate: todoData.isRepeat ? todoData.repeatUntil : null
+                completed: false,
+                repeatType: 'NONE'
             };
 
             const updatedTodo = await todoApi.update(id, payload);
             if (updatedTodo) {
-                // Update local state
-                const numericId = Number(id); // Ensure ID is a number for comparison
+                const numericId = Number(id);
                 const index = state.todos.findIndex(t => t.id === numericId);
                 if (index !== -1) {
                     const color = updatedTodo.completed ? '#4caf50' : '#d32f2f';
                     state.todos[index] = {
+                        ...state.todos[index], // Keep existing props
                         id: updatedTodo.id,
                         title: updatedTodo.title,
                         content: updatedTodo.description,
@@ -150,8 +189,6 @@ export const useTodoStore = () => {
                         status: updatedTodo.completed ? 'Done' : 'Todo',
                         color: color,
                         allday: updatedTodo.allDay,
-                        daysOfWeek: updatedTodo.daysOfWeek,
-                        repeatUntil: updatedTodo.repeatUntilDate
                     };
                 }
             }
@@ -161,7 +198,7 @@ export const useTodoStore = () => {
         }
     };
 
-    // Explicitly fetch data for a specific todo (uses list API as backend lacks single GET)
+    // Explicitly fetch data for a specific todo
     const getTodo = async (id) => {
         await fetchTodos(); // Ensure fresh data from API
         return state.todos.find(t => t.id === Number(id));
@@ -197,22 +234,40 @@ export const useTodoStore = () => {
 
     // Getters
     const getTodosByDate = (date) => {
-        return state.todos.filter(t => isSameDate(t.date, date));
+        const targetDate = new Date(date);
+        targetDate.setHours(0, 0, 0, 0);
+
+        return state.todos.filter(todo => {
+            const start = new Date(todo.startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(todo.endDate);
+            end.setHours(23, 59, 59, 999);
+
+            return targetDate >= start && targetDate <= end;
+        });
     };
 
     const eventsForCalendar = computed(() => {
-        // Return format expected by Calendar: { date, color }
-        // Group by date or just map. If multiple todos on one day, maybe decide color priority.
-        return state.todos.map(t => {
-            let color = '#d32f2f'; // Default Red
-            if (t.status === 'Done') color = '#4caf50'; // Green
-            else if (t.status === 'In Progress') color = '#f57c00'; // Orange
+        const events = [];
+        state.todos.forEach(todo => {
+            // For multi-day normal todos, expand them here for calendar dots/chips if needed
+            // Or if they are single day (like generated routines), just add one.
+            const current = new Date(todo.startDate);
+            const end = new Date(todo.endDate);
 
-            return {
-                date: new Date(t.date),
-                color
-            };
+            // Simple loop for spanning days
+            while (current <= end) {
+                events.push({
+                    id: todo.id,
+                    title: todo.title,
+                    priority: todo.priority || 'Low',
+                    status: todo.status,
+                    date: new Date(current)
+                });
+                current.setDate(current.getDate() + 1);
+            }
         });
+        return events;
     });
 
     // Statistics Helper
@@ -220,13 +275,34 @@ export const useTodoStore = () => {
         const targetDate = new Date(date);
         targetDate.setHours(0, 0, 0, 0);
 
+        // We need to expand todos for statistics too if we want accurate 'Day' stats for routines
+        // For 'Day', we can use getTodosByDate logic
+        if (rangeType === 'day') {
+            const dailyTodos = getTodosByDate(targetDate);
+            const stats = { todo: 0, inProgress: 0, done: 0 };
+            dailyTodos.forEach(t => {
+                if (t.status === 'Todo') stats.todo++;
+                else if (t.status === 'In Progress') stats.inProgress++;
+                else if (t.status === 'Done') stats.done++;
+            });
+            return stats;
+        }
+
+        // For Week/Month, it's more complex because of overlapping instances.
+        // For now, falling back to simple non-expanded logic or previous logic 
+        // BUT corrected to filter by checkTodoOnDate implies checking every day in range
+
+        // Simpler approach for now: Use existing logic but beware it doesn't count specific routine instances
+        // A proper implementation would require iterating every day of the week/month and summing up.
+        // Given the request focus is on Calendar visibility, let's stick to the previous simple logic for Week/Month
+        // OR improve it slightly to just check strict overlap for normal todos.
+
+        // Reverting to filteredTodos logic from previous file roughly:
         const filteredTodos = state.todos.filter(t => {
             const tDate = new Date(t.date);
             tDate.setHours(0, 0, 0, 0);
 
-            if (rangeType === 'day') {
-                return tDate.getTime() === targetDate.getTime();
-            } else if (rangeType === 'week') {
+            if (rangeType === 'week') {
                 const day = targetDate.getDay();
                 const diff = targetDate.getDate() - day; // Adjusts so Sunday is day 0
                 const startOfWeek = new Date(targetDate);
@@ -252,10 +328,6 @@ export const useTodoStore = () => {
     };
 
     const statistics = computed(() => {
-        // Default to overall stats for backward compatibility or simple view
-        // But for the view usage, we will likely call getStatistics directly or use a reactive wrapper in the view.
-        // Keeping this as "All Time" stats or removing if unused. 
-        // Let's keep it as is for now, but the View will use the function above.
         const stats = { todo: 0, inProgress: 0, done: 0 };
         state.todos.forEach(t => {
             if (t.status === 'Todo') stats.todo++;
