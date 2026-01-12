@@ -131,29 +131,30 @@ const deleteTodo = async () => {
             <button class="back-btn" @click="closeDetail">←</button>
             
             <div class="detail-body">
-                <div class="priority-display">
-                    <div 
-                        class="priority-dot-large"
-                        :class="{
-                            'priority-high': selectedTodo.priority === 'High',
-                            'priority-medium': selectedTodo.priority === 'Medium',
-                            'priority-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
-                        }"
-                    >
-                        <span 
-                            class="priority-text"
-                            :class="{
-                                'text-high': selectedTodo.priority === 'High',
-                                'text-medium': selectedTodo.priority === 'Medium',
-                                'text-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
-                            }"
-                        >{{ selectedTodo.priority || 'Low' }}</span>
-                    </div>
-                </div>
+                <!-- Priority Display moved to info-header -->
                 
                 <div class="info-group">
                     <div class="info-header">
                         <h1 class="info-title">{{ selectedTodo.title }}</h1>
+                        
+                        <div class="priority-display-inline">
+                            <div 
+                                class="priority-dot-inline"
+                                :class="{
+                                    'priority-high': selectedTodo.priority === 'High',
+                                    'priority-medium': selectedTodo.priority === 'Medium',
+                                    'priority-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
+                                }"
+                            ></div>
+                            <span 
+                                class="priority-text-inline"
+                                :class="{
+                                    'text-high': selectedTodo.priority === 'High',
+                                    'text-medium': selectedTodo.priority === 'Medium',
+                                    'text-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
+                                }"
+                            >{{ selectedTodo.priority || 'Low' }}</span>
+                        </div>
                     </div>
                     
                     <div class="date-time-row">

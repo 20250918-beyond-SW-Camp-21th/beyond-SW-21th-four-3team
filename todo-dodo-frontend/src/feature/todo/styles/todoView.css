@@ -187,10 +187,13 @@
     left: 15px;
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
+    /* Increased size */
+    font-weight: 900;
+    /* Thicker */
     cursor: pointer;
-    color: #9e9e9e;
-    /* Lighter color for discrete look */
+    color: #424242;
+    /* Darker for better visibility */
     padding: 5px;
     border-radius: 50%;
     width: 36px;
@@ -199,6 +202,7 @@
     justify-content: center;
     align-items: center;
     transition: all 0.2s;
+    z-index: 10;
 }
 
 .back-btn:hover {
@@ -215,59 +219,41 @@
     /* Align to top */
 }
 
-.priority-display {
-    /* Removed fixed width/height */
+/* Inline Priority Display */
+.priority-display-inline {
     display: flex;
-    justify-content: center;
     align-items: center;
-    padding-top: 5px;
-    /* Visual alignment with title */
-    position: relative;
-    /* Context for absolute positioning */
-    flex-direction: column;
-    /* Stack text above dot */
+    gap: 10px;
+    margin-left: 15px;
+    /* Spacing from Title */
 }
 
-.priority-dot-large {
-    width: 26px;
-    /* Reduced by another 20% from 32px */
-    height: 26px;
+.priority-dot-inline {
+    width: 20px;
+    /* Increased ~60% from 12px */
+    height: 20px;
     border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    margin-top: 10px;
-    /* Reduced space for text above */
+    /* No shadow needed for small dot, or subtle */
 }
 
-.priority-text {
-    position: absolute;
-    /* Position relative to container */
-    top: 0px;
-    /* Moved down to touch the dot */
+.priority-text-inline {
+    font-size: 0.9rem;
+    /* Reduced ~40% from 1.5rem */
     font-weight: bold;
-    font-size: 8px;
-    /* Greatly reduced */
     text-transform: uppercase;
-    letter-spacing: 0;
-    white-space: nowrap;
 }
 
 .text-high {
     color: #e53935;
-    /* Red */
 }
 
 .text-medium {
     color: #ff9800;
-    /* Orange */
 }
 
 .text-low {
-    color: #9e9e9e;
-    /* Gray */
+    color: #616161;
+    /* Darker than #9e9e9e for better visibility */
 }
 
 .info-group {
@@ -279,10 +265,11 @@
 
 .info-title {
     font-size: 1.60rem;
-    /* Reduced to 1.60rem */
     font-weight: bold;
     color: #424242;
     margin: 0;
+    margin-left: 20px;
+    /* Shift right to avoid overlap */
 }
 
 .date-time-row {
