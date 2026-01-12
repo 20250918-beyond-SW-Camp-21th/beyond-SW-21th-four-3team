@@ -9,6 +9,87 @@ const store = useTodoStore()
 const todos = computed(() => store.state.todos)
 const selectedTodo = ref(null)
 
+// --- Period Filtering Logic ---
+const viewMode = ref('WEEKLY') // 'WEEKLY' | 'MONTHLY'
+const currentDate = ref(new Date())
+
+// Helper: Get Week Range (Sun-Sat)
+const getWeekRange = (date) => {
+    const start = new Date(date)
+    const day = start.getDay()
+    start.setDate(start.getDate() - day)
+    start.setHours(0, 0, 0, 0)
+    
+    const end = new Date(start)
+    end.setDate(end.getDate() + 6)
+    end.setHours(23, 59, 59, 999)
+    
+    return { start, end }
+}
+
+// Helper: Get Month Range
+const getMonthRange = (date) => {
+    const start = new Date(date.getFullYear(), date.getMonth(), 1)
+    const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+    end.setHours(23, 59, 59, 999)
+    return { start, end }
+}
+
+const currentPeriodLabel = computed(() => {
+    const y = currentDate.value.getFullYear()
+    const m = currentDate.value.getMonth() + 1
+    
+    if (viewMode.value === 'MONTHLY') {
+        return `${y}.${m.toString().padStart(2, '0')}`
+    } else {
+        // Weekly: Show e.g., "1월 2째주" or Range
+        // Simple approach: YYYY.MM (Week W) or just Date Range
+        // Let's go with "YYYY.MM Week N" for simplicity or Date Range if preferred.
+        // User asked for simple and clear. "YYYY.MM" is often enough context if we show the week.
+        // Let's try "YYYY.MM - W{n}" or just the simple date range "MM.DD ~ MM.DD"
+        const { start, end } = getWeekRange(currentDate.value)
+        return `${start.getMonth()+1}.${start.getDate()} ~ ${end.getMonth()+1}.${end.getDate()}`
+    }
+})
+
+const filteredTodos = computed(() => {
+    if (!todos.value) return []
+    
+    let startLimit, endLimit
+    
+    if (viewMode.value === 'WEEKLY') {
+        const range = getWeekRange(currentDate.value)
+        startLimit = range.start
+        endLimit = range.end
+    } else {
+        const range = getMonthRange(currentDate.value)
+        startLimit = range.start
+        endLimit = range.end
+    }
+    
+    return todos.value.filter(todo => {
+        const tStart = new Date(todo.startDate)
+        const tEnd = new Date(todo.endDate)
+        // Check overlap: (StartA <= EndB) and (EndA >= StartB)
+        return tStart <= endLimit && tEnd >= startLimit
+    })
+})
+
+const movePeriod = (direction) => {
+    const date = new Date(currentDate.value)
+    if (viewMode.value === 'WEEKLY') {
+        date.setDate(date.getDate() + (direction * 7))
+    } else {
+        date.setMonth(date.getMonth() + direction)
+    }
+    currentDate.value = date
+}
+
+const toggleViewMode = () => {
+    viewMode.value = viewMode.value === 'WEEKLY' ? 'MONTHLY' : 'WEEKLY'
+}
+// ------------------------------
+
 onMounted(() => {
     store.fetchTodos()
 })
@@ -92,13 +173,37 @@ const deleteTodo = async () => {
 
     <div class="todo-list-container" :class="{ 'list-expanded': !selectedTodo }">
         <div class="header-section">
-            <h2>TODO</h2>
-            <button @click="goToWrite" class="write-btn">+</button>
+            <div class="header-top">
+                <h2>TODO</h2>
+                <div class="period-controls">
+                    <button @click="movePeriod(-1)" class="nav-btn">‹</button>
+                    <span class="period-label">{{ currentPeriodLabel }}</span>
+                    <button @click="movePeriod(1)" class="nav-btn">›</button>
+                </div>
+                <!-- <button @click="goToWrite" class="write-btn">+</button> -->
+            </div>
+            
+            <div class="header-bottom">
+                 <div class="view-toggles">
+                    <span 
+                        class="toggle-opt" 
+                        :class="{ active: viewMode === 'WEEKLY' }"
+                        @click="viewMode = 'WEEKLY'"
+                    >Weekly</span>
+                    <span class="divider">|</span>
+                    <span 
+                        class="toggle-opt" 
+                        :class="{ active: viewMode === 'MONTHLY' }"
+                        @click="viewMode = 'MONTHLY'"
+                    >Monthly</span>
+                </div>
+                <button @click="goToWrite" class="write-btn-small">+</button>
+            </div>
         </div>
         
         <div class="todo-list">
             <div 
-                v-for="todo in todos" 
+                v-for="todo in filteredTodos" 
                 :key="todo.id" 
                 class="todo-item"
                 :class="{ 'active': selectedTodo?.id === todo.id, 'completed': todo.status === 'Done' }"
