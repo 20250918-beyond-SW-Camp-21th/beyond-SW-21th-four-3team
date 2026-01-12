@@ -1,5 +1,22 @@
 <script setup>
+import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import LoginModar from '@/components/LoginModar.vue'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
+const showAuthModal = ref(false)
+
+const isLoggedIn = computed(() => auth.isLoggedIn)
+const displayName = computed(() => auth.user?.name || auth.user?.loginId || 'User')
+
+function onUserButtonClick() {
+  if (!isLoggedIn.value) {
+    showAuthModal.value = true
+    return
+  }
+  auth.logout()
+}
 </script>
 
 <template>
@@ -10,10 +27,15 @@ import { RouterLink } from 'vue-router'
         <RouterLink to="/todo" class="nav-item">Todo</RouterLink>
         <RouterLink to="/workflow" class="nav-item">Workflow</RouterLink>
       </nav>
+
       <div class="user-profile">
-        <button class="user-name">User Name</button>
+        <button class="user-name" @click="onUserButtonClick">
+          {{ isLoggedIn ? displayName : 'Login' }}
+        </button>
       </div>
     </div>
+
+    <LoginModar :isOpen="showAuthModal" @close="showAuthModal = false" />
   </header>
 </template>
 
