@@ -174,29 +174,27 @@ const formattedDateInfo = computed(() => {
     if (!todo) return null
 
     // Routine Logic
+    // Routine Logic
     if (todo.repeatUntil) {
-        // Mocking day parsing for now since backend returns list of Enums or indices
-        // Assuming todo.daysOfWeek is available, otherwise falling back
-        const days = todo.daysOfWeek ? todo.daysOfWeek.join(', ') : 'Daily'
-        const until = new Date(todo.repeatUntil).toLocaleDateString()
-        const timeRange = todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
+        const dayMap = { 'SUNDAY': '일', 'MONDAY': '월', 'TUESDAY': '화', 'WEDNESDAY': '수', 'THURSDAY': '목', 'FRIDAY': '금', 'SATURDAY': '토' }
+        const dayOrder = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
         
+        let daysTags = []
+        if (todo.daysOfWeek && todo.daysOfWeek.length > 0) {
+            // Sort by Sun-Sat order
+            const sortedDays = [...todo.daysOfWeek].sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b))
+            daysTags = sortedDays.map(d => dayMap[d])
+        }
+
         return {
             type: 'ROUTINE',
-            text: `Every ${days} until ${until}`,
-            subText: timeRange
+            isRoutine: true,
+            daysTags: daysTags,
+            until: todo.repeatUntil,
+            timeRange: todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
         }
     }
-
-    // Allday Logic
-    if (todo.allday) {
-        return {
-            type: 'ALLDAY',
-            text: 'All Day',
-            subText: new Date(todo.startDate).toLocaleDateString()
-        }
-    }
-
+    
     // Normal Logic
     const startDateText = new Date(todo.startDate).toLocaleDateString()
     const endDateText = new Date(todo.endDate).toLocaleDateString()
@@ -206,12 +204,13 @@ const formattedDateInfo = computed(() => {
         dateDisplay = `${startDateText} ~ ${endDateText}`
     }
 
-    const timeRange = `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
+    const timeRange = todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
     
     return {
         type: 'NORMAL',
-        text: dateDisplay,
-        subText: timeRange
+        isRoutine: false,
+        dateTag: dateDisplay,
+        timeTag: timeRange
     }
 })
 
@@ -326,21 +325,23 @@ const deleteTodo = async () => {
                     
                     <div class="date-time-row">
                         <!-- Routine Case -->
-                        <div v-if="formattedDateInfo?.type === 'ROUTINE'" class="info-block">
-                            <div class="info-text">{{ formattedDateInfo.text }}</div>
-                            <div class="info-subtext large-time">{{ formattedDateInfo.subText }}</div>
+                        <div v-if="formattedDateInfo?.isRoutine" class="info-block-routine">
+                            <div class="routine-tags-row">
+                                <span class="tag-badge routine-badge">루틴</span>
+                                <span v-for="day in formattedDateInfo.daysTags" :key="day" class="tag-badge day-tag">{{ day }}</span>
+                                <span class="tag-badge until-tag">종료일: {{ formattedDateInfo.until }}</span>
+                            </div>
+                            <div class="routine-time-row">
+                                <span class="tag-badge time-tag">{{ formattedDateInfo.timeRange }}</span>
+                            </div>
                         </div>
 
-                        <!-- All Day Case -->
-                        <div v-else-if="formattedDateInfo?.type === 'ALLDAY'" class="info-block">
-                            <div class="info-text highlight">{{ formattedDateInfo.text }}</div>
-                            <div class="info-subtext large-time">{{ formattedDateInfo.subText }}</div>
-                        </div>
-
-                        <!-- Normal Case -->
-                        <div v-else class="info-block normal-date">
-                            <div class="info-text">{{ formattedDateInfo?.text }}</div>
-                            <div class="info-subtext large-time">{{ formattedDateInfo?.subText }}</div>
+                        <!-- Normal / All Day Case -->
+                        <div v-else class="info-block-normal">
+                             <div class="normal-tags-row">
+                                <span class="tag-badge date-tag">{{ formattedDateInfo?.dateTag }}</span>
+                                <span class="tag-badge time-tag">{{ formattedDateInfo?.timeTag }}</span>
+                            </div>
                         </div>
                     </div>
 

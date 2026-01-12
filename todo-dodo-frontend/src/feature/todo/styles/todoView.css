@@ -570,3 +570,64 @@
     color: #555;
     margin-top: 5px;
 }
+
+/* New Tag Styles */
+.info-block-routine,
+.info-block-normal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.routine-tags-row,
+.routine-time-row,
+.normal-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.routine-badge {
+    background-color: #673AB7;
+    /* Deep Purple */
+    color: white;
+}
+
+.day-tag {
+    background-color: #EDE7F6;
+    /* Lighter Purple for days */
+    color: #512DA8;
+    border: 1px solid #D1C4E9;
+}
+
+.until-tag {
+    background-color: #F5F5F5;
+    color: #616161;
+    border: 1px solid #E0E0E0;
+    font-size: 0.85rem;
+}
+
+.date-tag {
+    background-color: #E3F2FD;
+    /* Light Blue */
+    color: #1565C0;
+}
+
+.time-tag {
+    background-color: #FFF3E0;
+    /* Light Orange */
+    color: #EF6C00;
+}
