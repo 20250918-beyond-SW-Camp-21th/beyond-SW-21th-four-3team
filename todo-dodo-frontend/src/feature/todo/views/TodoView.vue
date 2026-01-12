@@ -233,7 +233,7 @@ const deleteTodo = async () => {
     
     <div class="detail-container">
         <div v-if="selectedTodo" class="detail-content">
-            <button class="back-btn" @click="closeDetail">←</button>
+            <button class="back-btn" @click="closeDetail">Back</button>
             
             <div class="detail-body">
                 <!-- Priority Display moved to info-header -->

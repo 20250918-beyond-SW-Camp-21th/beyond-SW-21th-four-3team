@@ -280,31 +280,63 @@
 
 .back-btn {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    background: none;
+    top: 9px;
+    /* Lower (was 5px) */
+    left: 27px;
+    /* Adjusted left to account for pseudo-element tip width (15px + ~12px) */
+    background-color: #e0e0e0;
     border: none;
-    font-size: 1.8rem;
-    /* Increased size */
-    font-weight: 900;
-    /* Thicker */
+    font-size: 0.7rem;
+    font-weight: 500;
+    /* Less bold but legible */
     cursor: pointer;
-    color: #424242;
-    /* Darker for better visibility */
-    padding: 5px;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    color: #616161;
+    /* Dark Gray (requested change from black/darker) */
+    padding: 1px 12px 0 8px;
+    /* Shift text: Right 3px (5->8), Down 1px (0->1) */
+    /* Longer: more padding on right */
+    width: auto;
+    min-width: 40px;
+    /* Ensure some length */
+    height: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
     transition: all 0.2s;
     z-index: 10;
+    line-height: 1;
+    border-radius: 0 6px 6px 0;
+    /* Rounder body */
+    /* Removed clip-path to allow border-radius */
+}
+
+/* Arrow Tip using Pseudo-element */
+.back-btn::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    /* Tip width */
+    top: 0;
+    width: 0;
+    height: 0;
+    border-top: 12px solid transparent;
+    /* Half of height */
+    border-bottom: 12px solid transparent;
+    border-right: 12px solid #e0e0e0;
+    /* Match background */
+    transition: border-right-color 0.2s;
 }
 
 .back-btn:hover {
-    background-color: #f5f5f5;
-    color: #424242;
+    background-color: #bdbdbd;
+    transform: translateX(-2px);
+    /* Subtle nudge left instead of padding */
+    padding-left: 5px;
+    /* Reset padding change */
+}
+
+.back-btn:hover::before {
+    border-right-color: #bdbdbd;
 }
 
 .detail-body {
@@ -365,8 +397,6 @@
     font-weight: bold;
     color: #424242;
     margin: 0;
-    margin-left: 20px;
-    /* Shift right to avoid overlap */
 }
 
 .date-time-row {
