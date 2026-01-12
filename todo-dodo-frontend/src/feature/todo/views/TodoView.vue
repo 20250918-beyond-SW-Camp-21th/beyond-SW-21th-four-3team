@@ -52,6 +52,7 @@ const currentPeriodLabel = computed(() => {
     }
 })
 
+
 const filteredTodos = computed(() => {
     if (!todos.value) return []
     
@@ -67,72 +68,17 @@ const filteredTodos = computed(() => {
         endLimit = range.end
     }
     
-    const expandedTodos = []
-    const DAY_MAP = {
-        'SUNDAY': 0, 'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3,
-        'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6
-    }
-
-    todos.value.forEach(todo => {
-        // 1. Normal Todo (No repeatUntil)
-        if (!todo.repeatUntil) {
-            const tStart = new Date(todo.startDate)
-            const tEnd = new Date(todo.endDate)
-            if (tStart <= endLimit && tEnd >= startLimit) {
-                expandedTodos.push(todo)
-            }
-            return
-        }
-
-        // 2. Routine Todo (Has repeatUntil)
-        const routineEnd = new Date(todo.repeatUntil)
-        routineEnd.setHours(23, 59, 59, 999)
+    // Simple filter: Check if todo overlaps with the view range
+    return todos.value.filter(todo => {
+        const tStart = new Date(todo.startDate)
+        const tEnd = new Date(todo.endDate)
         
-        // Optimize: Intersection of (ViewRange) and (RoutineRange)
-        const effStart = startLimit < new Date(todo.startDate) ? new Date(todo.startDate) : startLimit
-        const effEnd = endLimit < routineEnd ? endLimit : routineEnd
-
-        if (effStart > effEnd) return // No overlap
-
-        const current = new Date(effStart)
-        current.setHours(0,0,0,0) // Normalize
+        // Normalize time for date comparison
+        tStart.setHours(0,0,0,0)
+        tEnd.setHours(23,59,59,999)
         
-        // Loop limit safety: 365 days max to prevent infinite loops (though overlap logic handles it)
-        let safeCount = 0
-        while (current <= effEnd && safeCount < 366) {
-            safeCount++
-            const currentDay = current.getDay()
-            
-            // Check match. todo.daysOfWeek should be array of strings e.g. ["MONDAY"]
-            const isMatch = todo.daysOfWeek && todo.daysOfWeek.some(d => DAY_MAP[d] === currentDay)
-            
-            if (isMatch) {
-                // Create Virtual Instance
-                const instStart = new Date(current)
-                const sTime = todo.startTime || '00:00:00'
-                const [sH, sM] = sTime.split(':').map(Number)
-                instStart.setHours(sH, sM, 0)
-                
-                const instEnd = new Date(current)
-                const eTime = todo.endTime || '23:59:00'
-                const [eH, eM] = eTime.split(':').map(Number)
-                instEnd.setHours(eH, eM, 0)
-
-                expandedTodos.push({
-                    ...todo,
-                    id: `${todo.id}_${current.getTime()}`,
-                    originalId: todo.id,
-                    startDate: instStart.toISOString(),
-                    endDate: instEnd.toISOString(),
-                    date: instStart.toISOString(),
-                    isVirtual: true
-                })
-            }
-            current.setDate(current.getDate() + 1)
-        }
-    })
-    
-    return expandedTodos.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+        return tStart <= endLimit && tEnd >= startLimit
+    }).sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
 })
 
 const movePeriod = (direction) => {
@@ -295,7 +241,7 @@ const deleteTodo = async () => {
                     </div>
                 </div>
                 
-                <div class="checkbox-wrapper" @click.stop="store.toggleTodoStatus(todo.id)">
+                <div class="checkbox-wrapper" @click.stop="store.toggleTodoStatus(todo.originalId || todo.id)">
                     <div class="custom-checkbox">
                         <span v-if="todo.status === 'Done'">✔</span>
                     </div>

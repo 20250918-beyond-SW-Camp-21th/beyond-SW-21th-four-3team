@@ -48,7 +48,7 @@ const formatDate = (date) => {
           class="todo-item"
           :class="{ 'completed': todo.status === 'Done' }"
         >
-          <div class="checkbox-wrapper" @click="toggleTodo(todo.id)">
+          <div class="checkbox-wrapper" @click="toggleTodo(todo.originalId || todo.id)">
             <div class="custom-checkbox">
               <span v-if="todo.status === 'Done'">✓</span>
             </div>
