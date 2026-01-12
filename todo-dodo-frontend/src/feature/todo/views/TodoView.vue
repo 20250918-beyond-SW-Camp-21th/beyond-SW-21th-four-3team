@@ -73,6 +73,10 @@ const formattedDateInfo = computed(() => {
     }
 })
 
+const closeDetail = () => {
+    selectedTodo.value = null
+}
+
 const deleteTodo = async () => {
     if (selectedTodo.value) {
         if (confirm('삭제하시겠습니까?')) {
@@ -85,7 +89,8 @@ const deleteTodo = async () => {
 
 <template>
   <div class="todo-view">
-    <div class="todo-list-container">
+
+    <div class="todo-list-container" :class="{ 'list-expanded': !selectedTodo }">
         <div class="header-section">
             <h2>TODO</h2>
             <button @click="goToWrite" class="write-btn">+</button>
@@ -123,6 +128,7 @@ const deleteTodo = async () => {
     
     <div class="detail-container">
         <div v-if="selectedTodo" class="detail-content">
+            <button class="back-btn" @click="closeDetail">←</button>
             
             <div class="detail-body">
                 <div class="priority-display">
@@ -146,7 +152,9 @@ const deleteTodo = async () => {
                 </div>
                 
                 <div class="info-group">
-                    <h1 class="info-title">{{ selectedTodo.title }}</h1>
+                    <div class="info-header">
+                        <h1 class="info-title">{{ selectedTodo.title }}</h1>
+                    </div>
                     
                     <div class="date-time-row">
                         <!-- Routine Case -->
