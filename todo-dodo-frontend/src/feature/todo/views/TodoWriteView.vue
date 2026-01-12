@@ -85,7 +85,7 @@ const handleSubmit = async () => {
         content: content.value,
         startDate: startDate.value,
         startTime: startTime.value,
-        endDate: isRepeat.value ? repeatUntil.value : endDate.value,
+        endDate: isRepeat.value ? startDate.value : endDate.value,
         endTime: endTime.value,
         priority: priority.value,
         allday: allday.value,

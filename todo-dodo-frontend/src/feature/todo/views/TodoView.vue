@@ -67,12 +67,72 @@ const filteredTodos = computed(() => {
         endLimit = range.end
     }
     
-    return todos.value.filter(todo => {
-        const tStart = new Date(todo.startDate)
-        const tEnd = new Date(todo.endDate)
-        // Check overlap: (StartA <= EndB) and (EndA >= StartB)
-        return tStart <= endLimit && tEnd >= startLimit
+    const expandedTodos = []
+    const DAY_MAP = {
+        'SUNDAY': 0, 'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3,
+        'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6
+    }
+
+    todos.value.forEach(todo => {
+        // 1. Normal Todo (No repeatUntil)
+        if (!todo.repeatUntil) {
+            const tStart = new Date(todo.startDate)
+            const tEnd = new Date(todo.endDate)
+            if (tStart <= endLimit && tEnd >= startLimit) {
+                expandedTodos.push(todo)
+            }
+            return
+        }
+
+        // 2. Routine Todo (Has repeatUntil)
+        const routineEnd = new Date(todo.repeatUntil)
+        routineEnd.setHours(23, 59, 59, 999)
+        
+        // Optimize: Intersection of (ViewRange) and (RoutineRange)
+        const effStart = startLimit < new Date(todo.startDate) ? new Date(todo.startDate) : startLimit
+        const effEnd = endLimit < routineEnd ? endLimit : routineEnd
+
+        if (effStart > effEnd) return // No overlap
+
+        const current = new Date(effStart)
+        current.setHours(0,0,0,0) // Normalize
+        
+        // Loop limit safety: 365 days max to prevent infinite loops (though overlap logic handles it)
+        let safeCount = 0
+        while (current <= effEnd && safeCount < 366) {
+            safeCount++
+            const currentDay = current.getDay()
+            
+            // Check match. todo.daysOfWeek should be array of strings e.g. ["MONDAY"]
+            const isMatch = todo.daysOfWeek && todo.daysOfWeek.some(d => DAY_MAP[d] === currentDay)
+            
+            if (isMatch) {
+                // Create Virtual Instance
+                const instStart = new Date(current)
+                const sTime = todo.startTime || '00:00:00'
+                const [sH, sM] = sTime.split(':').map(Number)
+                instStart.setHours(sH, sM, 0)
+                
+                const instEnd = new Date(current)
+                const eTime = todo.endTime || '23:59:00'
+                const [eH, eM] = eTime.split(':').map(Number)
+                instEnd.setHours(eH, eM, 0)
+
+                expandedTodos.push({
+                    ...todo,
+                    id: `${todo.id}_${current.getTime()}`,
+                    originalId: todo.id,
+                    startDate: instStart.toISOString(),
+                    endDate: instEnd.toISOString(),
+                    date: instStart.toISOString(),
+                    isVirtual: true
+                })
+            }
+            current.setDate(current.getDate() + 1)
+        }
     })
+    
+    return expandedTodos.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
 })
 
 const movePeriod = (direction) => {
@@ -98,13 +158,14 @@ const goToWrite = () => {
     router.push('/todo/write')
 }
 
-const goToDetail = (id) => {
-    selectedTodo.value = store.state.todos.find(t => t.id === id)
+const goToDetail = (todo) => {
+    selectedTodo.value = todo
 }
 
 const goToEdit = () => {
     if (selectedTodo.value) {
-        router.push(`/todo/edit/${selectedTodo.value.id}`)
+        const id = selectedTodo.value.originalId || selectedTodo.value.id
+        router.push(`/todo/edit/${id}`)
     }
 }
 
@@ -161,7 +222,8 @@ const closeDetail = () => {
 const deleteTodo = async () => {
     if (selectedTodo.value) {
         if (confirm('삭제하시겠습니까?')) {
-            await store.deleteTodo(selectedTodo.value.id)
+            const id = selectedTodo.value.originalId || selectedTodo.value.id
+            await store.deleteTodo(id)
             selectedTodo.value = null
         }
     }
@@ -207,7 +269,7 @@ const deleteTodo = async () => {
                 :key="todo.id" 
                 class="todo-item"
                 :class="{ 'active': selectedTodo?.id === todo.id, 'completed': todo.status === 'Done' }"
-                @click="goToDetail(todo.id)"
+                @click="goToDetail(todo)"
             >
                 <div class="todo-item-left">
                     <!-- Priority Indicator -->
