@@ -348,8 +348,8 @@ const deleteTodo = async () => {
 
                     
                     <div class="action-buttons">
-                        <button class="edit-btn" @click="goToEdit">Edit</button>
-                        <button class="delete-btn" @click="deleteTodo">Delete</button>
+                        <button class="edit-btn" @click="goToEdit">수정</button>
+                        <button class="delete-btn" @click="deleteTodo">삭제</button>
                     </div>
                 </div>
             </div>

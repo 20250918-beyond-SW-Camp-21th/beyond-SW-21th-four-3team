@@ -429,19 +429,20 @@
 .action-buttons {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
     justify-content: flex-start;
-    /* Align left */
+    position: absolute;
+    top: 40px;
+    right: 40px;
 }
 
 .edit-btn,
 .delete-btn {
     flex: 0 0 auto;
     /* Don't grow */
-    min-width: 80px;
+    min-width: 60px;
     /* Minimal width */
     padding: 8px 16px;
-    border-radius: 6px;
+    border-radius: 24px;
     cursor: pointer;
     font-weight: 500;
     font-size: 0.9rem;
