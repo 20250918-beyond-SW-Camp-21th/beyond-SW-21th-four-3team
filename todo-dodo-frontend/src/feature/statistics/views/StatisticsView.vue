@@ -56,30 +56,47 @@ const stats = computed(() => {
     return store.getStatistics(rangeType.value, targetDate.value)
 })
 
-const totalTasks = computed(() => stats.value.todo + stats.value.inProgress + stats.value.done)
+const totalTasks = computed(() => stats.value.todo + stats.value.done)
+
+const completionRate = computed(() => {
+    const total = totalTasks.value
+    if (total === 0) return 0
+    return Math.round((stats.value.done / total) * 100)
+})
+
+// Circular Progress Logic
+const radius = 60
+const circumference = 2 * Math.PI * radius
+const strokeDashoffset = computed(() => {
+    const progress = completionRate.value / 100
+    return circumference * (1 - progress)
+})
+
+// Trend Data Logic
+const trendData = computed(() => {
+    return store.getTrendData(rangeType.value, targetDate.value)
+})
+
+const maxTrendValue = computed(() => {
+    if (!trendData.value || trendData.value.length === 0) return 0
+    // For Day view (Priority), value is 'count'
+    // For Week/Month, value is 'total' (todo + done) or we can stack them using max total
+    return Math.max(...trendData.value.map(d => d.total !== undefined ? d.total : d.count))
+})
 
 const pieStyle = computed(() => {
     const total = totalTasks.value
     if (total === 0) return { background: '#e0e0e0' } // Gray if empty
 
     const todoP = (stats.value.todo / total) * 100
-    const inProgP = (stats.value.inProgress / total) * 100
     // Done takes the rest
 
-    // Conic Gradient Logic
-    // Start at 0%
-    // Todo: 0% -> todoP%
-    // InProgress: todoP% -> (todoP + inProgP)%
-    // Done: (todoP + inProgP)% -> 100%
-    
-    const p1 = todoP
-    const p2 = todoP + inProgP
+    // Conic Gradient Logic: Todo (0% -> todoP%), Done (todoP% -> 100%)
     
     return {
         background: `conic-gradient(
-            #ff9800 0% ${p1}%,
-            #2196f3 ${p1}% ${p2}%,
-            #4caf50 ${p2}% 100%
+            #ff9800 0% ${todoP}%,
+            #4caf50 ${todoP}% 100%
         )`
     }
 })
@@ -104,18 +121,81 @@ const pieStyle = computed(() => {
             </div>
         </div>
 
-        <div class="pie-chart-container">
-            <div class="pie-chart" :style="pieStyle">
-                <div class="chart-center">
-                    <span>Total</span>
-                    <strong>{{ totalTasks }}</strong>
+        <div class="dashboard-grid">
+            <!-- Card 1: Bar Chart (Trend) -->
+            <div class="stat-card bar-card">
+                <div class="bar-chart-container">
+                    <div v-if="trendData.length === 0" class="no-data">No Data</div>
+                    <div v-else class="bars-wrapper" :class="rangeType">
+                        <div v-for="(item, index) in trendData" :key="index" class="bar-group">
+                            <div class="bar-column">
+                                <span class="bar-value" v-if="(item.total || item.count) > 0">{{ item.total || item.count }}</span>
+                                
+                                <div v-if="rangeType === 'day'" 
+                                     class="bar priority-bar"
+                                     :style="{ height: (item.count / maxTrendValue * 100) + '%', backgroundColor: item.color }">
+                                </div>
+
+                                <div v-else class="bar-stack" :style="{ height: (item.total / maxTrendValue * 100) + '%' }">
+                                    <div class="bar-segment todo" :style="{ flex: item.todo, background: '#ff9800' }"></div>
+                                    <div class="bar-segment done" :style="{ flex: item.done, background: '#4caf50' }"></div>
+                                </div>
+                            </div>
+                            <span class="bar-label">{{ item.label }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="legend">
-                <div class="legend-item"><span class="dot todo-dot"></span> Todo ({{ stats.todo }})</div>
-                <div class="legend-item"><span class="dot progress-dot"></span> 진행중 ({{ stats.inProgress }})</div>
-                <div class="legend-item"><span class="dot done-dot"></span> 완료 ({{ stats.done }})</div>
+
+            <!-- Card 2: Pie Chart (Distribution) -->
+            <div class="stat-card pie-card">
+                <div class="pie-chart-container">
+                    <!-- Just the Pie Chart Group -->
+                    <div class="pie-chart-group">
+                        <div class="pie-chart" :style="pieStyle">
+                            <div class="chart-center">
+                                <span>Total</span>
+                                <strong>{{ totalTasks }}</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="legend">
+                            <div class="legend-item"><span class="dot todo-dot"></span> Todo ({{ stats.todo }})</div>
+                            <div class="legend-item"><span class="dot done-dot"></span> 완료 ({{ stats.done }})</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Completion Rate -->
+            <div class="stat-card rate-card">
+                <div class="progress-ring-container">
+                    <svg class="progress-ring" width="160" height="160">
+                        <circle
+                            class="progress-ring__circle--bg"
+                            stroke="#e6e6e6"
+                            stroke-width="12"
+                            fill="transparent"
+                            r="60"
+                            cx="80"
+                            cy="80"
+                        />
+                        <circle
+                            class="progress-ring__circle"
+                            stroke="#4caf50"
+                            stroke-width="12"
+                            fill="transparent"
+                            r="60"
+                            cx="80"
+                            cy="80"
+                            :style="{ strokeDasharray: `${circumference} ${circumference}`, strokeDashoffset: strokeDashoffset }"
+                        />
+                    </svg>
+                    <div class="progress-text">
+                        <span class="rate-value">{{ completionRate }}%</span>
+                        <span class="rate-label">Completion</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

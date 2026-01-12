@@ -279,10 +279,9 @@ export const useTodoStore = () => {
         // For 'Day', we can use getTodosByDate logic
         if (rangeType === 'day') {
             const dailyTodos = getTodosByDate(targetDate);
-            const stats = { todo: 0, inProgress: 0, done: 0 };
+            const stats = { todo: 0, done: 0 };
             dailyTodos.forEach(t => {
                 if (t.status === 'Todo') stats.todo++;
-                else if (t.status === 'In Progress') stats.inProgress++;
                 else if (t.status === 'Done') stats.done++;
             });
             return stats;
@@ -318,20 +317,86 @@ export const useTodoStore = () => {
             return false;
         });
 
-        const stats = { todo: 0, inProgress: 0, done: 0 };
+        const stats = { todo: 0, done: 0 };
         filteredTodos.forEach(t => {
             if (t.status === 'Todo') stats.todo++;
-            else if (t.status === 'In Progress') stats.inProgress++;
             else if (t.status === 'Done') stats.done++;
         });
         return stats;
     };
 
+    const getTrendData = (rangeType, date) => {
+        const targetDate = new Date(date);
+        targetDate.setHours(0, 0, 0, 0);
+
+        const data = [];
+
+        if (rangeType === 'day') {
+            // Priority Distribution for the day
+            const priorities = ['High', 'Medium', 'Low'];
+            const dailyTodos = getTodosByDate(targetDate);
+
+            priorities.forEach(p => {
+                const count = dailyTodos.filter(t => t.priority === p).length;
+                data.push({
+                    label: p,
+                    count: count,
+                    // Use standard priority colors
+                    color: p === 'High' ? '#ef5350' : p === 'Medium' ? '#ff9800' : '#bdbdbd'
+                });
+            });
+        } else if (rangeType === 'week') {
+            // Weekly Trend (Su - Sa)
+            const day = targetDate.getDay();
+            const diff = targetDate.getDate() - day;
+            const startOfWeek = new Date(targetDate);
+            startOfWeek.setDate(diff);
+
+            const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+            for (let i = 0; i < 7; i++) {
+                const current = new Date(startOfWeek);
+                current.setDate(startOfWeek.getDate() + i);
+
+                const todos = getTodosByDate(current);
+                const todoCount = todos.filter(t => t.status === 'Todo').length;
+                const doneCount = todos.filter(t => t.status === 'Done').length;
+
+                data.push({
+                    label: days[i],
+                    todo: todoCount,
+                    done: doneCount,
+                    total: todoCount + doneCount
+                });
+            }
+        } else if (rangeType === 'month') {
+            // Month Trend
+            const year = targetDate.getFullYear();
+            const month = targetDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const current = new Date(year, month, i);
+                const todos = getTodosByDate(current);
+                const todoCount = todos.filter(t => t.status === 'Todo').length;
+                const doneCount = todos.filter(t => t.status === 'Done').length;
+
+                data.push({
+                    label: i,
+                    todo: todoCount,
+                    done: doneCount,
+                    total: todoCount + doneCount
+                });
+            }
+        }
+
+        return data;
+    };
+
     const statistics = computed(() => {
-        const stats = { todo: 0, inProgress: 0, done: 0 };
+        const stats = { todo: 0, done: 0 };
         state.todos.forEach(t => {
             if (t.status === 'Todo') stats.todo++;
-            else if (t.status === 'In Progress') stats.inProgress++;
             else if (t.status === 'Done') stats.done++;
         });
         return stats;
@@ -347,6 +412,7 @@ export const useTodoStore = () => {
         deleteTodo,
         getTodosByDate,
         getStatistics,
+        getTrendData,
         eventsForCalendar,
         statistics
     };
