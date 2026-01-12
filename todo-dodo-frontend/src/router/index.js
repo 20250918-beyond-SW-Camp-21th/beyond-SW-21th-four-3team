@@ -6,6 +6,10 @@ import { todoRoutes } from "@/feature/todo/router.js"
 const router = createRouter({
     history: createWebHistory(),
     routes: [
+        {
+            path: '/',
+            redirect: '/calendar'
+        },
         ...calendarRoutes,
         ...statisticsRoutes,
         ...todoRoutes

@@ -184,14 +184,14 @@ const handleCancel = () => {
                     <div class="datetime-row">
                         <label>Start</label>
                         <div class="split-inputs">
-                            <input v-model="startDate" @click="$event.target.showPicker()" type="date" class="input-date" :disabled="allday" />
+                            <input v-model="startDate" @click="$event.target.showPicker()" type="date" class="input-date" />
                             <input v-model="startTime" @click="$event.target.showPicker()" type="time" class="input-date" :disabled="allday" />
                         </div>
                     </div>
                     <div class="datetime-row">
                         <label>End</label>
                         <div class="split-inputs">
-                            <input v-if="!isRepeat" v-model="endDate" @click="$event.target.showPicker()" type="date" class="input-date" :disabled="allday" />
+                            <input v-if="!isRepeat" v-model="endDate" @click="$event.target.showPicker()" type="date" class="input-date" />
                             <input v-model="endTime" @click="$event.target.showPicker()" type="time" class="input-date" :disabled="allday" />
                         </div>
                     </div>
