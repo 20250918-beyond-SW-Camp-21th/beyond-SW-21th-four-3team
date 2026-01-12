@@ -203,6 +203,8 @@
 
 .input-content {
     width: 100%;
+    /* Fix overflow issue */
+    box-sizing: border-box;
     min-height: 300px;
     padding: 15px;
     border: 1px solid #eee;
@@ -333,8 +335,28 @@
 .split-inputs {
     display: flex;
     gap: 10px;
+    width: 50%;
+    /* Reduced width as requested */
 }
 
 .split-inputs .input-date {
     flex: 1;
+}
+
+/* ... */
+
+.input-date {
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    color: #424242;
+    font-size: 0.95rem;
+    outline: none;
+    background-color: #fafafa;
+    width: 100%;
+    /* Fill container */
+    box-sizing: border-box;
+    /* Handle padding correctly */
+    cursor: pointer;
+    /* Make it feel like a button */
 }
