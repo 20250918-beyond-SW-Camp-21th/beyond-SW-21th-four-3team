@@ -71,27 +71,27 @@ const formatDate = (date) => {
   display: flex;
   justify-content: center;
   gap: 40px;
-  max-width: 1000px;
-  margin: 40px auto;
+  max-width: 1680px; /* Increased from 1400px by ~20% */
+  margin: 1px auto; /* Reduced margin */
   padding: 0 20px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Prevent wrapping to keep side-by-side */
 }
 
 .calendar-section {
-  flex: 1;
-  min-width: 350px;
+  flex: 1; /* Takes remaining space */
+  min-width: 0; /* Prevent flex overflow */
 }
 
 .todo-panel {
-  flex: 1;
-  min-width: 300px;
+  flex: 0 0 320px; /* Fixed width */
+  min-width: 320px;
   background: white;
   border-radius: 20px;
   padding: 25px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  max-height: 500px; /* Aligns roughly with calendar height */
+  height: 750px; /* Increased height */
 }
 
 .panel-header {
