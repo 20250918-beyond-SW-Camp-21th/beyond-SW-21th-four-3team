@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Calendar from '@/components/Calendar.vue'
 import { useTodoStore } from '@/stores/todoStore'
 
+const router = useRouter()
 const store = useTodoStore()
 const selectedDate = ref(new Date())
 
@@ -22,6 +24,10 @@ const currentTodos = computed(() => {
 
 const toggleTodo = (id) => {
   store.toggleTodoStatus(id)
+}
+
+const goToDetail = (id) => {
+  router.push({ name: 'todo', query: { detailId: id } })
 }
 
 const formatDate = (date) => {
@@ -47,8 +53,9 @@ const formatDate = (date) => {
           :key="todo.id" 
           class="todo-item"
           :class="{ 'completed': todo.status === 'Done' }"
+          @click="goToDetail(todo.id)"
         >
-          <div class="checkbox-wrapper" @click="toggleTodo(todo.originalId || todo.id)">
+          <div class="checkbox-wrapper" @click.stop="toggleTodo(todo.originalId || todo.id)">
             <div class="custom-checkbox">
               <span v-if="todo.status === 'Done'">✓</span>
             </div>

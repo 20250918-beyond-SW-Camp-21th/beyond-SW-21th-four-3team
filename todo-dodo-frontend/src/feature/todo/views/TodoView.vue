@@ -1,9 +1,10 @@
 <script setup>
 import { onMounted, computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useTodoStore } from '@/stores/todoStore'
 
 const router = useRouter()
+const route = useRoute()
 const store = useTodoStore()
 
 const todos = computed(() => store.state.todos)
@@ -96,8 +97,20 @@ const toggleViewMode = () => {
 }
 // ------------------------------
 
-onMounted(() => {
-    store.fetchTodos()
+onMounted(async () => {
+    await store.fetchTodos()
+    
+    // Check for deep link to detail
+    if (route.query.detailId) {
+        const targetId = Number(route.query.detailId)
+        const found = store.state.todos.find(t => t.id === targetId)
+        if (found) {
+            selectedTodo.value = found
+            // Also adjust view buffer/date if needed to show this todo?
+            // User just wants to see the detail, which is an overlay. 
+            // So simply setting selectedTodo is enough to open the panel.
+        }
+    }
 })
 
 const goToWrite = () => {
