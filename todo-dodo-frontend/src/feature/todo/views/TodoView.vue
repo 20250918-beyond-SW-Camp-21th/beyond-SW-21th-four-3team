@@ -214,6 +214,11 @@ const formattedDateInfo = computed(() => {
     }
 })
 
+const formatListDate = (dateStr) => {
+    const d = new Date(dateStr)
+    return `${d.getMonth() + 1}.${d.getDate()}`
+}
+
 const closeDetail = () => {
     selectedTodo.value = null
 }
@@ -280,7 +285,14 @@ const deleteTodo = async () => {
                             'priority-low': !todo.priority || todo.priority === 'Low'
                         }"
                     ></div>
-                    <span class="todo-title">{{ todo.title }}</span>
+                    <div class="todo-text-content">
+                        <span class="todo-title">{{ todo.title }}</span>
+                        <div class="todo-tags">
+                            <span v-if="todo.repeatUntil" class="list-tag tag-routine">루틴</span>
+                            <span v-if="todo.allday" class="list-tag tag-allday">Allday</span>
+                            <span class="list-tag tag-date">{{ formatListDate(todo.startDate) }}</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="checkbox-wrapper" @click.stop="store.toggleTodoStatus(todo.id)">

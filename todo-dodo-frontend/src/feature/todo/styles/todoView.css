@@ -227,7 +227,50 @@
     color: #bdbdbd;
 }
 
+
 /* Checkbox Style */
+.todo-text-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* Space between title and tags */
+    width: 100%;
+    overflow: hidden;
+}
+
+.todo-tags {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+    /* Prevent overflow issue */
+}
+
+.list-tag {
+    font-size: 0.65rem;
+    /* Tiny */
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.tag-routine {
+    background-color: #EDE7F6;
+    color: #673AB7;
+}
+
+.tag-allday {
+    background-color: #E3F2FD;
+    color: #1565C0;
+}
+
+.tag-date {
+    color: #757575;
+    background-color: #E0E0E0;
+}
+
 .checkbox-wrapper {
     padding: 5px;
     cursor: pointer;
