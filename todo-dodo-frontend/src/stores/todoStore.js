@@ -69,6 +69,7 @@ export const useTodoStore = () => {
                 const newTodo = await todoApi.create(payload);
                 if (newTodo) {
                     pushTodoToState(newTodo);
+                    return newTodo; // Return the created todo
                 }
             } else {
                 // 2. Routine: Generate Individual Todos
@@ -88,11 +89,6 @@ export const useTodoStore = () => {
                 while (current <= effectiveEnd) {
                     const currentDayIndex = current.getDay(); // 0-6
                     const currentDayName = dayMap[currentDayIndex];
-
-                    // Check if current day matches selected days
-                    // todoData.selectedDays indices match dayMap indices IF selectedDays are [0,1..] text or indices?
-                    // todoStore.js previous code: "const mappedDays = todoData.selectedDays ? todoData.selectedDays.map(i => dayMap[i]) : [];"
-                    // So selectedDays are indices.
 
                     const isMatch = todoData.selectedDays && todoData.selectedDays.includes(currentDayIndex);
 
@@ -124,6 +120,7 @@ export const useTodoStore = () => {
                 results.forEach(newTodo => {
                     if (newTodo) pushTodoToState(newTodo);
                 });
+                return results; // Return array of created todos
             }
         } catch (err) {
             console.error('Failed to add todo', err);

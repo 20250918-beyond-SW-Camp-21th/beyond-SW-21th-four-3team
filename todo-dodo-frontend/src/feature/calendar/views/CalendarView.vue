@@ -51,6 +51,16 @@ const formatTagDate = (dateStr) => {
   const d = new Date(dateStr)
   return `${d.getMonth() + 1}.${d.getDate()}`
 }
+
+const createTodo = () => {
+    // Format date as YYYY-MM-DD for query param matches ISO slice(0,10)
+    // Adjust for timezone offset to ensure correct date string
+    const d = new Date(selectedDate.value)
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+    const dateStr = d.toISOString().slice(0, 10)
+    
+    router.push({ name: 'todo-write', query: { date: dateStr } })
+}
 </script>
 
 <template>
@@ -94,7 +104,9 @@ const formatTagDate = (dateStr) => {
         </div>
       </div>
       
-      <!-- Add Button Removed as per request -->
+      <button class="create-todo-btn" @click="createTodo">
+        + Todo 생성하기
+      </button>
     </div>
     
     <div class="calendar-section">
@@ -272,4 +284,32 @@ const formatTagDate = (dateStr) => {
 }
 
 /* Priority specific text adjustments if needed, but keeping it clean */
+/* Create Todo Button */
+.create-todo-btn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 12px;
+  background-color: #212121;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.create-todo-btn:hover {
+  background-color: #424242;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+}
+
+.create-todo-btn:active {
+  transform: translateY(0);
+}
 </style>

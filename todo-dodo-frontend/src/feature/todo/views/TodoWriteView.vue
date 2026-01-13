@@ -34,9 +34,13 @@ const nextHour = new Date(now)
 nextHour.setHours(nextHour.getHours() + 1)
 const nextHourIsoTime = nextHour.toISOString().slice(11, 16) // HH:mm
 
-const startDate = ref(currentIsoDate)
+// Check for date from query (from Calendar)
+const queryDate = route.query.date
+const initialDate = queryDate ? new Date(queryDate).toISOString().slice(0, 10) : currentIsoDate
+
+const startDate = ref(initialDate)
 const startTime = ref(currentIsoTime)
-const endDate = ref(currentIsoDate)
+const endDate = ref(initialDate)
 const endTime = ref(nextHourIsoTime)
 
 // Repeat Settings
