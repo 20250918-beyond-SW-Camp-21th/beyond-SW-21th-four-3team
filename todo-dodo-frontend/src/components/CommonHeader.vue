@@ -24,6 +24,7 @@ function onUserButtonClick() {
 function handleLogout() {
   auth.logout()
   showUserMenu.value = false
+  window.location.reload()
 }
 
 function handleClickOutside(event) {

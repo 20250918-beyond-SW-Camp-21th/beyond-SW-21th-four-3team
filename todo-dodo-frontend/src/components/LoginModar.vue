@@ -68,6 +68,7 @@ async function handleLogin() {
       return
     }
     close()
+    window.location.reload()
   } catch (e) {
     errorMsg.value = '로그인 중 오류가 발생했습니다.'
   } finally {
