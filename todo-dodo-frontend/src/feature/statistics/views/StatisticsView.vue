@@ -115,9 +115,17 @@ const pieStyle = computed(() => {
             </div>
             
             <div class="date-nav">
-                <button @click="navigate(-1)">&lt;</button>
+                <button @click="navigate(-1)" class="nav-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" class="arrow-icon">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
                 <span class="current-date">{{ dateDisplay }}</span>
-                <button @click="navigate(1)">&gt;</button>
+                <button @click="navigate(1)" class="nav-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" class="arrow-icon">
+                        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
             </div>
         </div>
 
@@ -158,11 +166,6 @@ const pieStyle = computed(() => {
                                 <strong>{{ totalTasks }}</strong>
                             </div>
                         </div>
-                        
-                        <div class="legend">
-                            <div class="legend-item"><span class="dot todo-dot"></span> Todo ({{ stats.todo }})</div>
-                            <div class="legend-item"><span class="dot done-dot"></span> 완료 ({{ stats.done }})</div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -198,10 +201,96 @@ const pieStyle = computed(() => {
                 </div>
             </div>
         </div>
+
+        <div class="legend-cards bottom-section">
+            <div class="stat-info-card todo-card">
+                <span class="stat-label">미완성</span>
+                <strong class="stat-count">{{ stats.todo }}</strong>
+            </div>
+            <div class="stat-info-card done-card">
+                <span class="stat-label">완료</span>
+                <strong class="stat-count">{{ stats.done }}</strong>
+            </div>
+        </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 @import '../styles/statisticsView.css';
+
+.nav-btn {
+  background-color: transparent; /* Transparent background */
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  padding: 0;
+}
+
+.nav-btn:hover {
+  background-color: white; /* White hover */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Add shadow for visibility */
+}
+
+.arrow-icon {
+  width: 20px;
+  height: 20px;
+  color: #333; /* Dark Icon color */
+}
+
+/* Legend Cards Styles */
+.legend-cards {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    margin-top: 40px; /* Increased separation */
+    padding: 0 20px; /* Align with grid padding */
+}
+
+.stat-info-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 10px;
+    border-radius: 12px;
+    background-color: #f9f9f9;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #616161;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.stat-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.todo-card {
+    border-top: 4px solid #ff9800; /* Orange top border */
+    background-color: #fff3e0; /* Very light orange bg */
+}
+
+.todo-card .stat-count {
+    color: #ef6c00; /* Darker orange text */
+}
+
+.done-card {
+    border-top: 4px solid #4caf50; /* Green top border */
+    background-color: #e8f5e9; /* Very light green bg */
+}
+
+.done-card .stat-count {
+    color: #2e7d32; /* Darker green text */
+}
 </style>
