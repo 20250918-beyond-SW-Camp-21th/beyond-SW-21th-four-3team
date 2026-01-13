@@ -92,9 +92,17 @@ const getPriorityClass = (priority) => {
 <template>
   <div class="calendar-container">
     <div class="calendar-header">
-      <button @click="prevMonth" class="nav-btn">&lt;</button>
+      <button @click="prevMonth" class="nav-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" class="arrow-icon">
+          <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
       <h2 class="month-year">{{ currentMonth + 1 }}월 {{ currentYear }}</h2>
-      <button @click="nextMonth" class="nav-btn">&gt;</button>
+      <button @click="nextMonth" class="nav-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" class="arrow-icon">
+          <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
     
     <div class="calendar-grid">
@@ -117,7 +125,7 @@ const getPriorityClass = (priority) => {
         <span class="day-number">{{ day.date.getDate() }}</span>
         <div class="todo-list-cell">
           <div 
-            v-for="event in getEventsForDate(day.date)" 
+            v-for="event in getEventsForDate(day.date).slice(0, 3)" 
             :key="event.id" 
             class="todo-chip"
             :class="[
@@ -126,6 +134,10 @@ const getPriorityClass = (priority) => {
             ]"
           >
             <span class="chip-title">{{ event.title }}</span>
+          </div>
+          <div v-if="getEventsForDate(day.date).length > 3" class="overflow-indicator">
+            <div class="dot"></div>
+            <div class="dot"></div>
           </div>
         </div>
       </div>
@@ -256,7 +268,7 @@ const getPriorityClass = (priority) => {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  overflow-y: auto; /* Scroll if too many items */
+  overflow-y: hidden; /* Hide scrollbar */
   max-height: 100%;
   padding: 0 2px;
 }
@@ -278,6 +290,22 @@ const getPriorityClass = (priority) => {
   text-align: left;
   line-height: 1.2;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+.overflow-indicator {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 3px;
+  gap: 3px;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  background-color: #9C27B0; /* Purple */
+  border-radius: 50%;
 }
 
 /* Priority Colors */
@@ -303,4 +331,27 @@ const getPriorityClass = (priority) => {
 /* Custom styles for specific highlight colors seen in reference */
 /* We can add dynamic classes for red/green highlights if we drive it by data */
 
+.nav-btn {
+  background-color: #424242; /* Dark Gray */
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  padding: 0;
+}
+
+.nav-btn:hover {
+  background-color: #616161;
+}
+
+.arrow-icon {
+  width: 20px;
+  height: 20px;
+  color: white; /* Icon color */
+}
 </style>
