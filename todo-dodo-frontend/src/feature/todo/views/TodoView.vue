@@ -13,6 +13,7 @@ const selectedTodo = ref(null)
 // --- Period Filtering Logic ---
 const viewMode = ref('WEEKLY') // 'WEEKLY' | 'MONTHLY'
 const currentDate = ref(new Date())
+const showDeleteModal = ref(false)
 
 // Helper: Get Week Range (Sun-Sat)
 const getWeekRange = (date) => {
@@ -184,11 +185,31 @@ const closeDetail = () => {
 
 const deleteTodo = async () => {
     if (selectedTodo.value) {
+        // Routine Check
+        if (selectedTodo.value.repeatUntil) {
+            showDeleteModal.value = true
+            return
+        }
+
         if (confirm('삭제하시겠습니까?')) {
             const id = selectedTodo.value.originalId || selectedTodo.value.id
             await store.deleteTodo(id)
             selectedTodo.value = null
         }
+    }
+}
+
+const handleDeleteOption = async (option) => {
+    showDeleteModal.value = false
+    if (!selectedTodo.value) return
+
+    if (option === 'one') {
+         const id = selectedTodo.value.originalId || selectedTodo.value.id
+         await store.deleteTodo(id)
+         selectedTodo.value = null
+    } else if (option === 'all') {
+        await store.deleteRoutine(selectedTodo.value)
+        selectedTodo.value = null
     }
 }
 </script>
@@ -336,6 +357,19 @@ const deleteTodo = async () => {
         </div>
     </div>
   </div>
+
+    <!-- Routine Delete Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>일정 삭제</h3>
+            <p class="modal-text">선택한 일정이 반복되는 루틴입니다.<br>삭제 방식을 선택해주세요.</p>
+            <div class="modal-actions">
+                <button @click="handleDeleteOption('one')" class="btn-option">이 일정만 삭제</button>
+                <button @click="handleDeleteOption('all')" class="btn-option danger">모든 일정 삭제</button>
+            </div>
+            <button @click="showDeleteModal = false" class="btn-cancel-text">취소</button>
+        </div>
+    </div>
 </template>
 
 <style scoped>

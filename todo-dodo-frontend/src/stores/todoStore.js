@@ -232,6 +232,42 @@ export const useTodoStore = () => {
         }
     };
 
+    const deleteRoutine = async (templateTodo) => {
+        try {
+            // Helper to compare arrays
+            const normalizeDays = (days) => {
+                if (!days) return '';
+                return [...days].sort().join(',');
+            };
+            const targetDays = normalizeDays(templateTodo.daysOfWeek);
+
+            // Find candidates
+            const candidates = state.todos.filter(t => {
+                if (t.title !== templateTodo.title) return false;
+                if (t.repeatUntil !== templateTodo.repeatUntil) return false;
+                if (normalizeDays(t.daysOfWeek) !== targetDays) return false;
+                if (t.startTime !== templateTodo.startTime) return false;
+                return true;
+            });
+
+            if (candidates.length === 0) return;
+
+            if (!confirm(`${candidates.length}개의 반복 일정을 모두 삭제하시겠습니까?`)) return;
+
+            // Execute deletions
+            const deletePromises = candidates.map(t => todoApi.delete(t.id));
+            await Promise.all(deletePromises);
+
+            // Update State
+            const deletedIds = new Set(candidates.map(t => t.id));
+            state.todos = state.todos.filter(t => !deletedIds.has(t.id));
+
+        } catch (err) {
+            console.error('Failed to delete routine', err);
+            await fetchTodos(); // Sync on error
+        }
+    };
+
     // Getters
     const getTodosByDate = (date) => {
         const targetDate = new Date(date);
@@ -410,6 +446,7 @@ export const useTodoStore = () => {
         getTodo,
         toggleTodoStatus,
         deleteTodo,
+        deleteRoutine,
         getTodosByDate,
         getStatistics,
         getTrendData,
