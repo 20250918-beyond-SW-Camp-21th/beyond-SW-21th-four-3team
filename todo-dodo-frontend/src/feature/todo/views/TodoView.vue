@@ -151,7 +151,7 @@ const formattedDateInfo = computed(() => {
             isRoutine: true,
             daysTags: daysTags,
             until: todo.repeatUntil,
-            timeRange: todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
+            timeRange: `Time: ${todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`}`
         }
     }
     
@@ -169,8 +169,8 @@ const formattedDateInfo = computed(() => {
     return {
         type: 'NORMAL',
         isRoutine: false,
-        dateTag: dateDisplay,
-        timeTag: timeRange
+        dateTag: `Date: ${dateDisplay}`,
+        timeTag: `Time: ${timeRange}`
     }
 })
 

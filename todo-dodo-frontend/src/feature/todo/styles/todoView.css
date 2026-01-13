@@ -402,10 +402,6 @@
 
 .back-btn:hover {
     background-color: #bdbdbd;
-    transform: translateX(-2px);
-    /* Subtle nudge left instead of padding */
-    padding-left: 5px;
-    /* Reset padding change */
 }
 
 .back-btn:hover::before {
