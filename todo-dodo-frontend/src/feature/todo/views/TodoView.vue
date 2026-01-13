@@ -40,15 +40,13 @@ const getMonthRange = (date) => {
 const currentPeriodLabel = computed(() => {
     const y = currentDate.value.getFullYear()
     const m = currentDate.value.getMonth() + 1
+    const d = currentDate.value.getDate()
     
     if (viewMode.value === 'MONTHLY') {
         return `${y}.${m.toString().padStart(2, '0')}`
+    } else if (viewMode.value === 'DAILY') {
+        return `${y}.${m.toString().padStart(2, '0')}.${d.toString().padStart(2, '0')}`
     } else {
-        // Weekly: Show e.g., "1월 2째주" or Range
-        // Simple approach: YYYY.MM (Week W) or just Date Range
-        // Let's go with "YYYY.MM Week N" for simplicity or Date Range if preferred.
-        // User asked for simple and clear. "YYYY.MM" is often enough context if we show the week.
-        // Let's try "YYYY.MM - W{n}" or just the simple date range "MM.DD ~ MM.DD"
         const { start, end } = getWeekRange(currentDate.value)
         return `${start.getMonth()+1}.${start.getDate()} ~ ${end.getMonth()+1}.${end.getDate()}`
     }
@@ -64,6 +62,13 @@ const filteredTodos = computed(() => {
         const range = getWeekRange(currentDate.value)
         startLimit = range.start
         endLimit = range.end
+    } else if (viewMode.value === 'DAILY') {
+        const start = new Date(currentDate.value)
+        start.setHours(0, 0, 0, 0)
+        const end = new Date(currentDate.value)
+        end.setHours(23, 59, 59, 999)
+        startLimit = start
+        endLimit = end
     } else {
         const range = getMonthRange(currentDate.value)
         startLimit = range.start
@@ -87,6 +92,8 @@ const movePeriod = (direction) => {
     const date = new Date(currentDate.value)
     if (viewMode.value === 'WEEKLY') {
         date.setDate(date.getDate() + (direction * 7))
+    } else if (viewMode.value === 'DAILY') {
+        date.setDate(date.getDate() + direction)
     } else {
         date.setMonth(date.getMonth() + direction)
     }
@@ -94,7 +101,10 @@ const movePeriod = (direction) => {
 }
 
 const toggleViewMode = () => {
-    viewMode.value = viewMode.value === 'WEEKLY' ? 'MONTHLY' : 'WEEKLY'
+    // Cycling isn't used by the template buttons, but good to keep logic safe if needed
+    if (viewMode.value === 'WEEKLY') viewMode.value = 'MONTHLY'
+    else if (viewMode.value === 'MONTHLY') viewMode.value = 'DAILY'
+    else viewMode.value = 'WEEKLY'
 }
 // ------------------------------
 
@@ -107,9 +117,8 @@ onMounted(async () => {
         const found = store.state.todos.find(t => t.id === targetId)
         if (found) {
             selectedTodo.value = found
-            // Also adjust view buffer/date if needed to show this todo?
-            // User just wants to see the detail, which is an overlay. 
-            // So simply setting selectedTodo is enough to open the panel.
+            // Update current date to match the todo so the list updates
+            currentDate.value = new Date(found.startDate)
         }
     }
 })
@@ -151,6 +160,7 @@ const formattedDateInfo = computed(() => {
             isRoutine: true,
             daysTags: daysTags,
             until: todo.repeatUntil,
+            dateTag: `Date: ${new Date(todo.startDate).toLocaleDateString()}`,
             timeRange: `Time: ${todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`}`
         }
     }
@@ -212,6 +222,17 @@ const handleDeleteOption = async (option) => {
         selectedTodo.value = null
     }
 }
+const goCalendar = () => {
+    if (selectedTodo.value) {
+        // Pass the start date to calendar
+        router.push({ 
+            path: '/calendar', 
+            query: { date: selectedTodo.value.startDate } 
+        })
+    } else {
+        router.push('/calendar')
+    }
+}
 </script>
 
 <template>
@@ -231,6 +252,12 @@ const handleDeleteOption = async (option) => {
             
             <div class="header-bottom">
                  <div class="view-toggles">
+                    <span 
+                        class="toggle-opt" 
+                        :class="{ active: viewMode === 'DAILY' }"
+                        @click="viewMode = 'DAILY'"
+                    >Daily</span>
+                    <span class="divider">|</span>
                     <span 
                         class="toggle-opt" 
                         :class="{ active: viewMode === 'WEEKLY' }"
@@ -286,7 +313,10 @@ const handleDeleteOption = async (option) => {
     
     <div class="detail-container">
         <div v-if="selectedTodo" class="detail-content">
-            <button class="back-btn" @click="closeDetail">Back</button>
+            <div class="detail-nav">
+                <button class="back-btn" @click="closeDetail">Back</button>
+                <button class="calendar-btn" @click="goCalendar">Calendar</button>
+            </div>
             
             <div class="detail-body">
                 <!-- Priority Display moved to info-header -->
@@ -324,6 +354,7 @@ const handleDeleteOption = async (option) => {
                                 <span class="tag-badge until-tag">종료일: {{ formattedDateInfo.until }}</span>
                             </div>
                             <div class="routine-time-row">
+                                <span class="tag-badge date-tag">{{ formattedDateInfo.dateTag }}</span>
                                 <span class="tag-badge time-tag">{{ formattedDateInfo.timeRange }}</span>
                             </div>
                         </div>

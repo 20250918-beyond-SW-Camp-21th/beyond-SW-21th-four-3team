@@ -87,6 +87,17 @@ const getPriorityClass = (priority) => {
   if (p === 'medium') return 'priority-medium'
   return 'priority-low'
 }
+
+const setDate = (date) => {
+  selectedDate.value = new Date(date)
+  currentDate.value = new Date(date)
+  // Ensure we set to 1st of month to avoid overflow issues if day doesn't exist?
+  // Actually currentDate logic sets 1st of month for calculations anyway or uses it directly.
+  // But navigation uses new Date(currentYear, currentMonth, 1).
+  // Let's just set currentDate to the passed date, the computed props use getFullYear/getMonth.
+}
+
+defineExpose({ setDate })
 </script>
 
 <template>
@@ -285,12 +296,13 @@ const getPriorityClass = (priority) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: white;
+  color: #444; /* Dark text for pastel background */
   width: 100%;
   text-align: left;
   line-height: 1.2;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   flex-shrink: 0;
+  font-weight: 500; /* Added weight for readability */
 }
 
 .overflow-indicator {
@@ -308,17 +320,17 @@ const getPriorityClass = (priority) => {
   border-radius: 50%;
 }
 
-/* Priority Colors */
+/* Priority Colors (Pastel) */
 .priority-high {
-  background-color: #ef5350; /* Red */
+  background-color: #ffb3ba; /* Pastel Red/Pink */
 }
 
 .priority-medium {
-  background-color: #ff9800; /* Orange */
+  background-color: #ffdfba; /* Pastel Orange */
 }
 
 .priority-low {
-  background-color: #9e9e9e; /* Gray */
+  background-color: #bae1ff; /* Pastel Blue */
 }
 
 /* Done State */

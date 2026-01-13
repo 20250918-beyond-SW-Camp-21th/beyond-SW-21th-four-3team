@@ -1,16 +1,29 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import Calendar from '@/components/Calendar.vue'
 import { useTodoStore } from '@/stores/todoStore'
 
 const router = useRouter()
+const route = useRoute()
 const store = useTodoStore()
 const selectedDate = ref(new Date())
+const calendarRef = ref(null)
 
 // Initial data fetch
 onMounted(() => {
   store.fetchTodos()
+  
+  if (route.query.date) {
+    const targetDate = new Date(route.query.date)
+    selectedDate.value = targetDate
+    // Defer to next tick to ensure child is mounted if needed, 
+    // but onMounted usually suffices for child access if not v-if'ed out.
+    // However, store fetch is async but irrelevant for calendar nav.
+    if (calendarRef.value) {
+        calendarRef.value.setDate(targetDate)
+    }
+  }
 })
 
 const handleDateSelect = (date) => {
@@ -85,7 +98,7 @@ const formatTagDate = (dateStr) => {
     </div>
     
     <div class="calendar-section">
-      <Calendar @selectDate="handleDateSelect" />
+      <Calendar ref="calendarRef" @selectDate="handleDateSelect" />
     </div>
   </div>
 </template>

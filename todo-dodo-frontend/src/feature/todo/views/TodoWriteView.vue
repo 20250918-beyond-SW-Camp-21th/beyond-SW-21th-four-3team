@@ -29,10 +29,15 @@ now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
 const currentIsoDate = now.toISOString().slice(0, 10) // YYYY-MM-DD
 const currentIsoTime = now.toISOString().slice(11, 16) // HH:mm
 
+// Calculate +1 Hour for Default End Time
+const nextHour = new Date(now)
+nextHour.setHours(nextHour.getHours() + 1)
+const nextHourIsoTime = nextHour.toISOString().slice(11, 16) // HH:mm
+
 const startDate = ref(currentIsoDate)
 const startTime = ref(currentIsoTime)
 const endDate = ref(currentIsoDate)
-const endTime = ref(currentIsoTime)
+const endTime = ref(nextHourIsoTime)
 
 // Repeat Settings
 const isRepeat = ref(false)
