@@ -77,8 +77,7 @@ onUnmounted(() => {
 .common-header {
   width: 100%;
   height: 80px;
-  background-color: #424242; /* Dark Grey Background */
-  border-bottom: 1px solid #333;
+  background-color: #616161; /* Brighter Dark Grey */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -89,6 +88,7 @@ onUnmounted(() => {
 
 .header-content {
   width: 100%;
+  height: 100%; /* Fill parent height */
   max-width: 1200px;
   display: flex;
   justify-content: space-between;
@@ -98,11 +98,11 @@ onUnmounted(() => {
 
 .nav-links {
   display: flex;
-  gap: 10px; /* Reduced gap as tabs might touch or be close */
+  gap: 0; /* Remove gap for seamless full height items */
   flex-grow: 1;
   justify-content: center;
   height: 100%;
-  align-items: flex-end; /* Align tabs to bottom if needed, or center */
+  align-items: stretch; /* Stretch items to fill height */
 }
 
 .nav-item {
@@ -110,11 +110,13 @@ onUnmounted(() => {
   color: #ffffff; /* White text */
   font-size: 1.3rem; /* Large */
   font-weight: 700; /* Bold */
-  padding: 12px 30px;
-  border-radius: 12px 12px 0 0; /* Tab shape: Top rounded */
+  padding: 0 30px; /* Horizontal padding only, vertical centered by flex */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
-  margin-bottom: -1px; /* Align with bottom border if desired */
-  border: 1px solid transparent;
+  border: none;
+  height: 100%;
 }
 
 .nav-item:hover {
@@ -123,9 +125,9 @@ onUnmounted(() => {
 }
 
 .router-link-active {
-  background-color: #e0e0e0; /* Light Grey matching page background (or #f5f5f5 as requested) */
+  background-color: #e0e0e0; /* Light Grey matching page background */
   color: #212121; /* Black text */
-  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+  box-shadow: none; /* Remove shadow if not needed, or keep */
 }
 
 .user-profile {
