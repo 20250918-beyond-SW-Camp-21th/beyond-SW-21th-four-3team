@@ -25,7 +25,13 @@ import { RouterView } from 'vue-router'
 
 main {
   flex: 1;
-  padding: 20px;
+  padding: 15px;
+}
+</style>
+
+<style>
+body {
+  margin: 0;
 }
 </style>
 

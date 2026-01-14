@@ -1,11 +1,13 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import LoginModar from '@/components/LoginModar.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const showAuthModal = ref(false)
+const showUserMenu = ref(false)
+const userProfileRef = ref(null)
 
 const isLoggedIn = computed(() => auth.isLoggedIn)
 const displayName = computed(() => auth.user?.name || auth.user?.loginId || 'User')
@@ -15,8 +17,29 @@ function onUserButtonClick() {
     showAuthModal.value = true
     return
   }
-  auth.logout()
+  // Toggle menu instead of auto logout
+  showUserMenu.value = !showUserMenu.value
 }
+
+function handleLogout() {
+  auth.logout()
+  showUserMenu.value = false
+  window.location.reload()
+}
+
+function handleClickOutside(event) {
+  if (showUserMenu.value && userProfileRef.value && !userProfileRef.value.contains(event.target)) {
+    showUserMenu.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
@@ -28,10 +51,21 @@ function onUserButtonClick() {
         <RouterLink to="/workflow" class="nav-item">Workflow</RouterLink>
       </nav>
 
-      <div class="user-profile">
+      <div class="user-profile" ref="userProfileRef">
         <button class="user-name" @click="onUserButtonClick">
-          {{ isLoggedIn ? displayName : 'Login' }}
+          {{ isLoggedIn ? displayName : '로그인' }}
         </button>
+        
+        <div v-if="showUserMenu && isLoggedIn" class="user-menu">
+          <div class="menu-info">
+            <p class="info-name">{{ auth.user?.nickname || auth.user?.name || '사용자' }}</p>
+            <p class="info-id">@{{ auth.user?.loginId }}</p>
+          </div>
+          <div class="menu-divider"></div>
+          <button class="menu-logout" @click="handleLogout">
+            로그아웃
+          </button>
+        </div>
       </div>
     </div>
 
@@ -43,16 +77,18 @@ function onUserButtonClick() {
 .common-header {
   width: 100%;
   height: 80px;
-  background-color: #424242; /* Dark Grey Background */
-  border-bottom: 1px solid #333;
+  background-color: #616161; /* Brighter Dark Grey */
   display: flex;
   justify-content: center;
   align-items: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 100;
 }
 
 .header-content {
   width: 100%;
+  height: 100%; /* Fill parent height */
   max-width: 1200px;
   display: flex;
   justify-content: space-between;
@@ -62,11 +98,11 @@ function onUserButtonClick() {
 
 .nav-links {
   display: flex;
-  gap: 10px; /* Reduced gap as tabs might touch or be close */
+  gap: 0; /* Remove gap for seamless full height items */
   flex-grow: 1;
   justify-content: center;
   height: 100%;
-  align-items: flex-end; /* Align tabs to bottom if needed, or center */
+  align-items: stretch; /* Stretch items to fill height */
 }
 
 .nav-item {
@@ -74,11 +110,13 @@ function onUserButtonClick() {
   color: #ffffff; /* White text */
   font-size: 1.3rem; /* Large */
   font-weight: 700; /* Bold */
-  padding: 12px 30px;
-  border-radius: 12px 12px 0 0; /* Tab shape: Top rounded */
+  padding: 0 30px; /* Horizontal padding only, vertical centered by flex */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
-  margin-bottom: -1px; /* Align with bottom border if desired */
-  border: 1px solid transparent;
+  border: none;
+  height: 100%;
 }
 
 .nav-item:hover {
@@ -87,14 +125,15 @@ function onUserButtonClick() {
 }
 
 .router-link-active {
-  background-color: #e0e0e0; /* Light Grey matching page background (or #f5f5f5 as requested) */
+  background-color: #e0e0e0; /* Light Grey matching page background */
   color: #212121; /* Black text */
-  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+  box-shadow: none; /* Remove shadow if not needed, or keep */
 }
 
 .user-profile {
   display: flex;
   align-items: center;
+  position: relative; /* For dropdown positioning */
 }
 
 .user-name {
@@ -111,5 +150,64 @@ function onUserButtonClick() {
 
 .user-name:hover {
   background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* User Menu Dropdown */
+.user-menu {
+  position: absolute;
+  top: 120%; /* Below the button */
+  right: 0;
+  width: 200px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  animation: fadeIn 0.1s ease-out;
+}
+
+.menu-info {
+  padding: 8px 12px;
+}
+
+.info-name {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+}
+
+.info-id {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 8px 0;
+}
+
+.menu-logout {
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  color: #d32f2f;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.menu-logout:hover {
+  background-color: #ffebee;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

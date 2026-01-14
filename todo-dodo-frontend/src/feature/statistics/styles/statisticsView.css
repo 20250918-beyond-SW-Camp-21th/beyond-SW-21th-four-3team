@@ -7,27 +7,175 @@
 }
 
 .stats-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 600px;
+    max-width: 1500px;
+    /* Full width */
     text-align: center;
+    /* Transparent wrapper */
 }
 
+/* ... */
 .stats-title {
     color: #333;
     margin-bottom: 2rem;
 }
 
 .controls {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     display: flex;
     flex-direction: column;
     gap: 15px;
     align-items: center;
 }
+
+/* ... existing tabs/nav styles ... */
+/* Keep lines 32-84 same if possible, or just overwrite carefully */
+/* Since I am replacing the file content from line 9 to end, I must be careful about omitted parts */
+
+/* Dashboard Layout */
+.dashboard-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    /* Cards same height */
+    gap: 30px;
+    padding: 0 20px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    /* Softer shadow */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.bar-card {
+    flex: 2;
+    min-width: 400px;
+}
+
+.pie-card {
+    flex: 1;
+    min-width: 300px;
+}
+
+.rate-card {
+    flex: 0.8;
+    min-width: 200px;
+}
+
+/* Bar Chart Styles */
+.bar-chart-container {
+    width: 100%;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.bars-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    height: 100%;
+    padding-bottom: 5px;
+    /* Space for labels */
+    gap: 10px;
+}
+
+.bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.bar-column {
+    position: relative;
+    width: 20px;
+    /* Default width */
+    height: 100%;
+    /* Will be controlled by children percentage but container is flex-end */
+    display: flex;
+    align-items: flex-end;
+    /* Align bar to bottom */
+    justify-content: center;
+    flex: 1;
+    /* Take up height space */
+}
+
+/* Specific widths based on range */
+.bars-wrapper.day .bar-column {
+    width: 40px;
+}
+
+.bars-wrapper.week .bar-column {
+    width: 30px;
+}
+
+.bars-wrapper.month .bar-column {
+    width: 8px;
+}
+
+.bar,
+.bar-stack {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s ease;
+    min-height: 2px;
+    /* Ensure visibility */
+}
+
+.bar-stack {
+    display: flex;
+    flex-direction: column-reverse;
+    /* Stack from bottom up */
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.bar-segment {
+    width: 100%;
+    transition: flex 0.3s ease;
+}
+
+/* Priority Colors */
+
+
+.bar-value {
+    position: absolute;
+    top: -20px;
+    font-size: 0.8rem;
+    color: #757575;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.bar-label {
+    font-size: 0.8rem;
+    color: #9e9e9e;
+}
+
+.bars-wrapper.month .bar-label {
+    font-size: 0.7rem;
+    /* Show label every 5 days maybe? or just smaller font */
+}
+
+/* Pie Chart Adjustment */
+
+
+/* ... existing pie/legend styles ... */
+/* But I need to include them in replacement if I overwrite */
 
 .tabs {
     display: flex;
@@ -146,10 +294,51 @@
     background-color: #ff9800;
 }
 
-.progress-dot {
-    background-color: #2196f3;
-}
+
 
 .done-dot {
     background-color: #4caf50;
+}
+
+/* Circular Progress */
+.progress-ring-container {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+    /* Start from top */
+}
+
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.5s ease-in-out;
+    stroke-linecap: round;
+}
+
+.progress-text {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.rate-value {
+    font-size: 2.2rem;
+    /* Adjusted for inside the ring */
+    color: #4caf50;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.rate-label {
+    font-size: 0.8rem;
+    color: #9e9e9e;
+    margin-top: 4px;
+    font-weight: 500;
 }

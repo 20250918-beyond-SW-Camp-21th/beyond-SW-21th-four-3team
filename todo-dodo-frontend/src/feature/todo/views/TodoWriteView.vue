@@ -29,10 +29,19 @@ now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
 const currentIsoDate = now.toISOString().slice(0, 10) // YYYY-MM-DD
 const currentIsoTime = now.toISOString().slice(11, 16) // HH:mm
 
-const startDate = ref(currentIsoDate)
+// Calculate +1 Hour for Default End Time
+const nextHour = new Date(now)
+nextHour.setHours(nextHour.getHours() + 1)
+const nextHourIsoTime = nextHour.toISOString().slice(11, 16) // HH:mm
+
+// Check for date from query (from Calendar)
+const queryDate = route.query.date
+const initialDate = queryDate ? new Date(queryDate).toISOString().slice(0, 10) : currentIsoDate
+
+const startDate = ref(initialDate)
 const startTime = ref(currentIsoTime)
-const endDate = ref(currentIsoDate)
-const endTime = ref(currentIsoTime)
+const endDate = ref(initialDate)
+const endTime = ref(nextHourIsoTime)
 
 // Repeat Settings
 const isRepeat = ref(false)
@@ -85,7 +94,7 @@ const handleSubmit = async () => {
         content: content.value,
         startDate: startDate.value,
         startTime: startTime.value,
-        endDate: isRepeat.value ? repeatUntil.value : endDate.value,
+        endDate: isRepeat.value ? startDate.value : endDate.value,
         endTime: endTime.value,
         priority: priority.value,
         allday: allday.value,
@@ -120,7 +129,7 @@ const handleCancel = () => {
             <div class="form-group settings-group">
             <!-- Left Column: Priority -->
             <div class="settings-col priority-col">
-                <label class="section-label">Priority</label>
+                <label class="section-label">중요도</label>
                 <div class="priority-selector vertical">
                     <button 
                         class="priority-btn high" 
@@ -147,7 +156,7 @@ const handleCancel = () => {
                     :class="{ active: isRepeat }"
                     @click="isRepeat = !isRepeat"
                 >
-                    Repeat Weekly
+                    루틴 생성
                 </button>
 
                 <div v-if="isRepeat" class="repeat-options">
@@ -164,7 +173,7 @@ const handleCancel = () => {
                     </div>
                     <div class="datetime-row">
                         <label>Until</label>
-                        <input v-model="repeatUntil" type="date" class="input-date" />
+                        <input v-model="repeatUntil" @click="$event.target.showPicker()" type="date" class="input-date" />
                     </div>
                 </div>
             </div>
@@ -184,15 +193,15 @@ const handleCancel = () => {
                     <div class="datetime-row">
                         <label>Start</label>
                         <div class="split-inputs">
-                            <input v-model="startDate" type="date" class="input-date" :disabled="allday" />
-                            <input v-model="startTime" type="time" class="input-date" :disabled="allday" />
+                            <input v-model="startDate" @click="$event.target.showPicker()" type="date" class="input-date" />
+                            <input v-model="startTime" @click="$event.target.showPicker()" type="time" class="input-date" :disabled="allday" />
                         </div>
                     </div>
                     <div class="datetime-row">
                         <label>End</label>
                         <div class="split-inputs">
-                            <input v-if="!isRepeat" v-model="endDate" type="date" class="input-date" :disabled="allday" />
-                            <input v-model="endTime" type="time" class="input-date" :disabled="allday" />
+                            <input v-if="!isRepeat" v-model="endDate" @click="$event.target.showPicker()" type="date" class="input-date" />
+                            <input v-model="endTime" @click="$event.target.showPicker()" type="time" class="input-date" :disabled="allday" />
                         </div>
                     </div>
                 </div>

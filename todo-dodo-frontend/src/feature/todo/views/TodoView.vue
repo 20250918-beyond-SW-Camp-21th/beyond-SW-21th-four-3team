@@ -1,29 +1,140 @@
 <script setup>
 import { onMounted, computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useTodoStore } from '@/stores/todoStore'
 
 const router = useRouter()
+const route = useRoute()
 const store = useTodoStore()
 
 const todos = computed(() => store.state.todos)
 const selectedTodo = ref(null)
 
-onMounted(() => {
-    store.fetchTodos()
+// --- Period Filtering Logic ---
+const viewMode = ref('WEEKLY') // 'WEEKLY' | 'MONTHLY'
+const currentDate = ref(new Date())
+const showDeleteModal = ref(false)
+
+// Helper: Get Week Range (Sun-Sat)
+const getWeekRange = (date) => {
+    const start = new Date(date)
+    const day = start.getDay()
+    start.setDate(start.getDate() - day)
+    start.setHours(0, 0, 0, 0)
+    
+    const end = new Date(start)
+    end.setDate(end.getDate() + 6)
+    end.setHours(23, 59, 59, 999)
+    
+    return { start, end }
+}
+
+// Helper: Get Month Range
+const getMonthRange = (date) => {
+    const start = new Date(date.getFullYear(), date.getMonth(), 1)
+    const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+    end.setHours(23, 59, 59, 999)
+    return { start, end }
+}
+
+const currentPeriodLabel = computed(() => {
+    const y = currentDate.value.getFullYear()
+    const m = currentDate.value.getMonth() + 1
+    const d = currentDate.value.getDate()
+    
+    if (viewMode.value === 'MONTHLY') {
+        return `${y}.${m.toString().padStart(2, '0')}`
+    } else if (viewMode.value === 'DAILY') {
+        return `${y}.${m.toString().padStart(2, '0')}.${d.toString().padStart(2, '0')}`
+    } else {
+        const { start, end } = getWeekRange(currentDate.value)
+        return `${start.getMonth()+1}.${start.getDate()} ~ ${end.getMonth()+1}.${end.getDate()}`
+    }
+})
+
+
+const filteredTodos = computed(() => {
+    if (!todos.value) return []
+    
+    let startLimit, endLimit
+    
+    if (viewMode.value === 'WEEKLY') {
+        const range = getWeekRange(currentDate.value)
+        startLimit = range.start
+        endLimit = range.end
+    } else if (viewMode.value === 'DAILY') {
+        const start = new Date(currentDate.value)
+        start.setHours(0, 0, 0, 0)
+        const end = new Date(currentDate.value)
+        end.setHours(23, 59, 59, 999)
+        startLimit = start
+        endLimit = end
+    } else {
+        const range = getMonthRange(currentDate.value)
+        startLimit = range.start
+        endLimit = range.end
+    }
+    
+    // Simple filter: Check if todo overlaps with the view range
+    return todos.value.filter(todo => {
+        const tStart = new Date(todo.startDate)
+        const tEnd = new Date(todo.endDate)
+        
+        // Normalize time for date comparison
+        tStart.setHours(0,0,0,0)
+        tEnd.setHours(23,59,59,999)
+        
+        return tStart <= endLimit && tEnd >= startLimit
+    }).sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+})
+
+const movePeriod = (direction) => {
+    const date = new Date(currentDate.value)
+    if (viewMode.value === 'WEEKLY') {
+        date.setDate(date.getDate() + (direction * 7))
+    } else if (viewMode.value === 'DAILY') {
+        date.setDate(date.getDate() + direction)
+    } else {
+        date.setMonth(date.getMonth() + direction)
+    }
+    currentDate.value = date
+}
+
+const toggleViewMode = () => {
+    // Cycling isn't used by the template buttons, but good to keep logic safe if needed
+    if (viewMode.value === 'WEEKLY') viewMode.value = 'MONTHLY'
+    else if (viewMode.value === 'MONTHLY') viewMode.value = 'DAILY'
+    else viewMode.value = 'WEEKLY'
+}
+// ------------------------------
+
+onMounted(async () => {
+    await store.fetchTodos()
+    
+    // Check for deep link to detail
+    if (route.query.detailId) {
+        const targetId = Number(route.query.detailId)
+        const found = store.state.todos.find(t => t.id === targetId)
+        if (found) {
+            selectedTodo.value = found
+            // Update current date to match the todo so the list updates
+            currentDate.value = new Date(found.startDate)
+        }
+    }
 })
 
 const goToWrite = () => {
     router.push('/todo/write')
 }
 
-const goToDetail = (id) => {
-    selectedTodo.value = store.state.todos.find(t => t.id === id)
+const goToDetail = (todo) => {
+    selectedTodo.value = todo
 }
 
 const goToEdit = () => {
     if (selectedTodo.value) {
-        router.push(`/todo/edit/${selectedTodo.value.id}`)
+        const id = selectedTodo.value.originalId || selectedTodo.value.id
+        router.push(`/todo/edit/${id}`)
     }
 }
 
@@ -32,29 +143,28 @@ const formattedDateInfo = computed(() => {
     if (!todo) return null
 
     // Routine Logic
+    // Routine Logic
     if (todo.repeatUntil) {
-        // Mocking day parsing for now since backend returns list of Enums or indices
-        // Assuming todo.daysOfWeek is available, otherwise falling back
-        const days = todo.daysOfWeek ? todo.daysOfWeek.join(', ') : 'Daily'
-        const until = new Date(todo.repeatUntil).toLocaleDateString()
-        const timeRange = todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
+        const dayMap = { 'SUNDAY': '일', 'MONDAY': '월', 'TUESDAY': '화', 'WEDNESDAY': '수', 'THURSDAY': '목', 'FRIDAY': '금', 'SATURDAY': '토' }
+        const dayOrder = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
         
+        let daysTags = []
+        if (todo.daysOfWeek && todo.daysOfWeek.length > 0) {
+            // Sort by Sun-Sat order
+            const sortedDays = [...todo.daysOfWeek].sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b))
+            daysTags = sortedDays.map(d => dayMap[d])
+        }
+
         return {
             type: 'ROUTINE',
-            text: `Every ${days} until ${until}`,
-            subText: timeRange
+            isRoutine: true,
+            daysTags: daysTags,
+            until: todo.repeatUntil,
+            dateTag: `Date: ${new Date(todo.startDate).toLocaleDateString()}`,
+            timeRange: `Time: ${todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`}`
         }
     }
-
-    // Allday Logic
-    if (todo.allday) {
-        return {
-            type: 'ALLDAY',
-            text: 'All Day',
-            subText: new Date(todo.startDate).toLocaleDateString()
-        }
-    }
-
+    
     // Normal Logic
     const startDateText = new Date(todo.startDate).toLocaleDateString()
     const endDateText = new Date(todo.endDate).toLocaleDateString()
@@ -64,40 +174,113 @@ const formattedDateInfo = computed(() => {
         dateDisplay = `${startDateText} ~ ${endDateText}`
     }
 
-    const timeRange = `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
+    const timeRange = todo.allday ? 'All Day' : `${todo.startTime?.slice(0,5)} - ${todo.endTime?.slice(0,5)}`
     
     return {
         type: 'NORMAL',
-        text: dateDisplay,
-        subText: timeRange
+        isRoutine: false,
+        dateTag: `Date: ${dateDisplay}`,
+        timeTag: `Time: ${timeRange}`
     }
 })
 
+const formatListDate = (dateStr) => {
+    const d = new Date(dateStr)
+    return `${d.getMonth() + 1}.${d.getDate()}`
+}
+
+const closeDetail = () => {
+    selectedTodo.value = null
+}
+
 const deleteTodo = async () => {
     if (selectedTodo.value) {
+        // Routine Check
+        if (selectedTodo.value.repeatUntil) {
+            showDeleteModal.value = true
+            return
+        }
+
         if (confirm('삭제하시겠습니까?')) {
-            await store.deleteTodo(selectedTodo.value.id)
+            const id = selectedTodo.value.originalId || selectedTodo.value.id
+            await store.deleteTodo(id)
             selectedTodo.value = null
         }
+    }
+}
+
+const handleDeleteOption = async (option) => {
+    showDeleteModal.value = false
+    if (!selectedTodo.value) return
+
+    if (option === 'one') {
+         const id = selectedTodo.value.originalId || selectedTodo.value.id
+         await store.deleteTodo(id)
+         selectedTodo.value = null
+    } else if (option === 'all') {
+        await store.deleteRoutine(selectedTodo.value)
+        selectedTodo.value = null
+    }
+}
+const goCalendar = () => {
+    if (selectedTodo.value) {
+        // Pass the start date to calendar
+        router.push({ 
+            path: '/calendar', 
+            query: { date: selectedTodo.value.startDate } 
+        })
+    } else {
+        router.push('/calendar')
     }
 }
 </script>
 
 <template>
   <div class="todo-view">
-    <div class="todo-list-container">
+
+    <div class="todo-list-container" :class="{ 'list-expanded': !selectedTodo }">
         <div class="header-section">
-            <h2>TODO</h2>
-            <button @click="goToWrite" class="write-btn">+</button>
+            <div class="header-top">
+                <h2>TODO</h2>
+                <div class="period-controls">
+                    <button @click="movePeriod(-1)" class="nav-btn">‹</button>
+                    <span class="period-label">{{ currentPeriodLabel }}</span>
+                    <button @click="movePeriod(1)" class="nav-btn">›</button>
+                </div>
+                <!-- <button @click="goToWrite" class="write-btn">+</button> -->
+            </div>
+            
+            <div class="header-bottom">
+                 <div class="view-toggles">
+                    <span 
+                        class="toggle-opt" 
+                        :class="{ active: viewMode === 'DAILY' }"
+                        @click="viewMode = 'DAILY'"
+                    >Daily</span>
+                    <span class="divider">|</span>
+                    <span 
+                        class="toggle-opt" 
+                        :class="{ active: viewMode === 'WEEKLY' }"
+                        @click="viewMode = 'WEEKLY'"
+                    >Weekly</span>
+                    <span class="divider">|</span>
+                    <span 
+                        class="toggle-opt" 
+                        :class="{ active: viewMode === 'MONTHLY' }"
+                        @click="viewMode = 'MONTHLY'"
+                    >Monthly</span>
+                </div>
+                <button @click="goToWrite" class="write-btn-small">+</button>
+            </div>
         </div>
         
         <div class="todo-list">
             <div 
-                v-for="todo in todos" 
+                v-for="todo in filteredTodos" 
                 :key="todo.id" 
                 class="todo-item"
                 :class="{ 'active': selectedTodo?.id === todo.id, 'completed': todo.status === 'Done' }"
-                @click="goToDetail(todo.id)"
+                @click="goToDetail(todo)"
             >
                 <div class="todo-item-left">
                     <!-- Priority Indicator -->
@@ -109,10 +292,17 @@ const deleteTodo = async () => {
                             'priority-low': !todo.priority || todo.priority === 'Low'
                         }"
                     ></div>
-                    <span class="todo-title">{{ todo.title }}</span>
+                    <div class="todo-text-content">
+                        <span class="todo-title">{{ todo.title }}</span>
+                        <div class="todo-tags">
+                            <span v-if="todo.repeatUntil" class="list-tag tag-routine">루틴</span>
+                            <span v-if="todo.allday" class="list-tag tag-allday">Allday</span>
+                            <span class="list-tag tag-date">{{ formatListDate(todo.startDate) }}</span>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="checkbox-wrapper" @click.stop="store.toggleTodoStatus(todo.id)">
+                <div class="checkbox-wrapper" @click.stop="store.toggleTodoStatus(todo.originalId || todo.id)">
                     <div class="custom-checkbox">
                         <span v-if="todo.status === 'Done'">✔</span>
                     </div>
@@ -123,56 +313,66 @@ const deleteTodo = async () => {
     
     <div class="detail-container">
         <div v-if="selectedTodo" class="detail-content">
+            <div class="detail-nav">
+                <button class="back-btn" @click="closeDetail">Back</button>
+                <button class="calendar-btn" @click="goCalendar">Calendar</button>
+            </div>
             
             <div class="detail-body">
-                <div class="priority-display">
-                    <div 
-                        class="priority-dot-large"
-                        :class="{
-                            'priority-high': selectedTodo.priority === 'High',
-                            'priority-medium': selectedTodo.priority === 'Medium',
-                            'priority-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
-                        }"
-                    >
-                        <span 
-                            class="priority-text"
-                            :class="{
-                                'text-high': selectedTodo.priority === 'High',
-                                'text-medium': selectedTodo.priority === 'Medium',
-                                'text-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
-                            }"
-                        >{{ selectedTodo.priority || 'Low' }}</span>
-                    </div>
-                </div>
+                <!-- Priority Display moved to info-header -->
                 
                 <div class="info-group">
-                    <h1 class="info-title">{{ selectedTodo.title }}</h1>
+                    <div class="info-header">
+                        <h1 class="info-title">{{ selectedTodo.title }}</h1>
+                        
+                        <div class="priority-display-inline">
+                            <div 
+                                class="priority-dot-inline"
+                                :class="{
+                                    'priority-high': selectedTodo.priority === 'High',
+                                    'priority-medium': selectedTodo.priority === 'Medium',
+                                    'priority-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
+                                }"
+                            ></div>
+                            <span 
+                                class="priority-text-inline"
+                                :class="{
+                                    'text-high': selectedTodo.priority === 'High',
+                                    'text-medium': selectedTodo.priority === 'Medium',
+                                    'text-low': !selectedTodo.priority || selectedTodo.priority === 'Low'
+                                }"
+                            >{{ selectedTodo.priority || 'Low' }}</span>
+                        </div>
+                    </div>
                     
                     <div class="date-time-row">
                         <!-- Routine Case -->
-                        <div v-if="formattedDateInfo?.type === 'ROUTINE'" class="info-block">
-                            <div class="info-text">{{ formattedDateInfo.text }}</div>
-                            <div class="info-subtext large-time">{{ formattedDateInfo.subText }}</div>
+                        <div v-if="formattedDateInfo?.isRoutine" class="info-block-routine">
+                            <div class="routine-tags-row">
+                                <span class="tag-badge routine-badge">루틴</span>
+                                <span v-for="day in formattedDateInfo.daysTags" :key="day" class="tag-badge day-tag">{{ day }}</span>
+                                <span class="tag-badge until-tag">종료일: {{ formattedDateInfo.until }}</span>
+                            </div>
+                            <div class="routine-time-row">
+                                <span class="tag-badge date-tag">{{ formattedDateInfo.dateTag }}</span>
+                                <span class="tag-badge time-tag">{{ formattedDateInfo.timeRange }}</span>
+                            </div>
                         </div>
 
-                        <!-- All Day Case -->
-                        <div v-else-if="formattedDateInfo?.type === 'ALLDAY'" class="info-block">
-                            <div class="info-text highlight">{{ formattedDateInfo.text }}</div>
-                            <div class="info-subtext large-time">{{ formattedDateInfo.subText }}</div>
-                        </div>
-
-                        <!-- Normal Case -->
-                        <div v-else class="info-block normal-date">
-                            <div class="info-text">{{ formattedDateInfo?.text }}</div>
-                            <div class="info-subtext large-time">{{ formattedDateInfo?.subText }}</div>
+                        <!-- Normal / All Day Case -->
+                        <div v-else class="info-block-normal">
+                             <div class="normal-tags-row">
+                                <span class="tag-badge date-tag">{{ formattedDateInfo?.dateTag }}</span>
+                                <span class="tag-badge time-tag">{{ formattedDateInfo?.timeTag }}</span>
+                            </div>
                         </div>
                     </div>
 
 
                     
                     <div class="action-buttons">
-                        <button class="edit-btn" @click="goToEdit">Edit</button>
-                        <button class="delete-btn" @click="deleteTodo">Delete</button>
+                        <button class="edit-btn" @click="goToEdit">수정</button>
+                        <button class="delete-btn" @click="deleteTodo">삭제</button>
                     </div>
                 </div>
             </div>
@@ -188,6 +388,19 @@ const deleteTodo = async () => {
         </div>
     </div>
   </div>
+
+    <!-- Routine Delete Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>일정 삭제</h3>
+            <p class="modal-text">선택한 일정이 반복되는 루틴입니다.<br>삭제 방식을 선택해주세요.</p>
+            <div class="modal-actions">
+                <button @click="handleDeleteOption('one')" class="btn-option">이 일정만 삭제</button>
+                <button @click="handleDeleteOption('all')" class="btn-option danger">모든 일정 삭제</button>
+            </div>
+            <button @click="showDeleteModal = false" class="btn-cancel-text">취소</button>
+        </div>
+    </div>
 </template>
 
 <style scoped>
