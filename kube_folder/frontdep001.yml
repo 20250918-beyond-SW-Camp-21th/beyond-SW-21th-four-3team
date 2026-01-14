@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontdep001
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1          # 롤링 업데이트 시 최대 1개 추가 Pod 허용
+      maxUnavailable: 0    # 무중단 배포: 항상 최소 replicas 유지
+  selector:
+    matchLabels:
+      app: frontdep001
+  template:
+    metadata:
+      labels:
+        app: frontdep001
+    spec:
+      containers:
+        - name: front-container
+          image: leehyungwook/todo-dodo-front:latest
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 2
