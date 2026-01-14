@@ -18,7 +18,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class TodoService {
+public class TodoService implements TodoServiceImpl {
 
     private final TodoRepository todoRepository;
     private final UserRepository userRepository;
