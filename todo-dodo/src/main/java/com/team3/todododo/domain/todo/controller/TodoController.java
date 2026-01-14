@@ -1,10 +1,9 @@
 package com.team3.todododo.domain.todo.controller;
 
 import com.team3.todododo.common.response.ApiResult;
-import com.team3.todododo.common.security.JwtTokenProvider;
 import com.team3.todododo.domain.todo.dto.request.TodoRequest;
 import com.team3.todododo.domain.todo.dto.response.TodoResponse;
-import com.team3.todododo.domain.todo.service.TodoService;
+import com.team3.todododo.domain.todo.service.TodoServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TodoController {
 
-    private final TodoService todoService;
+    private final TodoServiceImpl todoServiceImpl;
      /* =========================
        유저별 조회
      ========================= */
@@ -26,7 +25,7 @@ public class TodoController {
             Principal principal
     ) {
         String loginId=principal.getName();
-        return ApiResult.success(todoService.getTodo(loginId));
+        return ApiResult.success(todoServiceImpl.getTodo(loginId));
     }
 
     /* =========================
@@ -38,7 +37,7 @@ public class TodoController {
             Principal principal
     ) {
         String loginId=principal.getName();
-        Long todoId = todoService.todoCreate(todoRequest, loginId);
+        Long todoId = todoServiceImpl.todoCreate(todoRequest, loginId);
 
 
         return ResponseEntity.ok(ApiResult.success(todoId));
@@ -55,7 +54,7 @@ public class TodoController {
     ) {
         String loginId=principal.getName();
 
-        todoService.todoUpdate(todoId, todoRequest, loginId);
+        todoServiceImpl.todoUpdate(todoId, todoRequest, loginId);
 
         return ResponseEntity.ok(ApiResult.success());
     }
@@ -70,7 +69,7 @@ public class TodoController {
     ) {
         String loginId=principal.getName();
 
-        todoService.todoDelete(todoId, loginId);
+        todoServiceImpl.todoDelete(todoId, loginId);
 
         return ResponseEntity.ok(ApiResult.success());
     }
@@ -86,7 +85,7 @@ public class TodoController {
     ) {
         String loginId=principal.getName();
 
-        todoService.changeCompleted(todoId, completed, loginId);
+        todoServiceImpl.changeCompleted(todoId, completed, loginId);
 
         return ResponseEntity.ok(ApiResult.success());
     }
