@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontdep001
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80             # 서비스 자체 포트 (Ingress가 여기로 보냄)
+      targetPort: 80       # 프론트엔드 컨테이너 실제 포트 (nginx 기본 포트)
+  selector:
+    app: frontdep001       # Deployment의 labels와 일치
