@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: front-container
-          image: leehyungwook/todo-dodo-front:latest
+          image: o2ppo/todo-dodo-front:latest
           ports:
             - containerPort: 80
           livenessProbe:
