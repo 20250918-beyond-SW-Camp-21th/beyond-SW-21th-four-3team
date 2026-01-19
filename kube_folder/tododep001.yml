@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: todo-container
-          image: o2ppo/todoback002:28
+          image: o2ppo/todoback002:30
           ports:
             - containerPort: 8080
           env:
