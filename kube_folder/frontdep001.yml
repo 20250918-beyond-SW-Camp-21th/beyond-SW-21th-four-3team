@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: front-container
-          image: o2ppo/todo-dodo-front:16
+          image: o2ppo/todo-dodo-front:18
           ports:
             - containerPort: 80
           livenessProbe:
