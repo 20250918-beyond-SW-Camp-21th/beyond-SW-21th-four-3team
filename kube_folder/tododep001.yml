@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: todo-container
-          image: o2ppo/todoback002:26
+          image: o2ppo/todoback002:latest
           ports:
             - containerPort: 8080
           env:
@@ -71,16 +71,14 @@ spec:
                   name: todo-secret
                   key: JWT_REFRESH_EXPIRATION
           livenessProbe:
-            httpGet:
-              path: /
+            tcpSocket:
               port: 8080
-            initialDelaySeconds: 10      # 스프링 뜰 시간 충분히 부여 (5초 -> 10초)
-            periodSeconds: 5
-            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 5
           readinessProbe:
-            httpGet:
-              path: /
-              port: 8080                 # [수정] 정상 작동을 위해 8080으로 변경
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            failureThreshold: 2
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
