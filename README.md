@@ -6,19 +6,19 @@
 ---
 ## 👥 팀원 소개
 
-| **이형욱 (Front-end)** | **이용우 (Back-end)** | **임재열 (DevOps)** |
-|:---:|:---:|:---:|
-| <img src="./assets/Annoy-o-Tron.png" width="150"/> | <img src="./assets/Hecklebot.png" width="150"/> | <img src="./assets/Doomsayer.png" width="150"/> |
-| **안녕로봇** | **야유로봇** | **파멸의 예언자** |
+|                **이용우 (Back-end)**                 |               **정재우 (Back-end)**               |               **윤홍석 (Back-end)**               |
+|:-------------------------------------------------:|:----------------------------------------------:|:----------------------------------------------:|
+| <img src="./asset/Annoy-o-Tron.png" width="150"/> | <img src="./asset/Hecklebot.png" width="150"/> | <img src="./asset/Doomsayer.png" width="150"/> |
+|                     **안녕로봇**                      |                    **야유로봇**                    |                  **파멸의 예언자**                   |
 
-| **정재우 (Back-end)** | **윤홍석 (Back-end)** |
+| **이형욱 (Front-end)** | **임재열 (DevOps)** |
 |:---:|:---:|
-| <img src="./assets/Grim_Patron.png" width="150"/> | <img src="./assets/Huffer.png" width="150"/> |
+| <img src="./asset/Grim_Patron.png" width="150"/> | <img src="./asset/Huffer.png" width="150"/> |
 | **험상궂은 손님** | **킁킁이** |
 
 ## 🧩 프로젝트 개요
 * **계층적 작업 관리:** Todo → Task → Issue 구조 기반의 체계적 설계
-* **워크플로우 최적화:** 상태 기반 진행 흐름 관리 (TODO / IN_PROGRESS / DONE)
+* **워크플로우 최적화:** 상태 기반 진행 흐름 관리 (TODO / DONE)
 * **확장 가능한 구조:** 개인 및 협업 환경 모두를 고려한 설계
 
 ## 🎯 기획 배경
@@ -40,7 +40,7 @@
 ### Backend
 - **Language:** Java 17
 - **Framework:** Spring Boot
-- **Database:** MySQL / MariaDB
+- **Database:** MariaDB
 
 ### Frontend
 - **Framework:** Vue.js 3
@@ -80,26 +80,45 @@ todo-dodo
     └── .gitignore
 ```
 
---- 
-재우, 요구사항 정의서를 이미지로 바로 보여주면서, 클릭하면 상세 PDF로 연결되도록 구조를 짰어. assets 폴더에 캡처한 이미지(backend_requirements.png, frontend_requirements.png)가 있다고 가정하고 작성했으니 파일명만 확인해줘!
+---
+##  📄 프로젝트 문서
+> [해당 프로젝트 문서 시트는 여기에서 확인하실 수 있습니다.](https://docs.google.com/spreadsheets/d/1fb9Lt01XtIq5lV3uXO4cThacHsvjYkBA/edit?gid=211153118#gid=211153118)
 
-README의 적절한 위치에 아래 내용을 그대로 복붙하면 돼.
-
-Markdown
 ## 📋 요구사항 정의 (Requirements)
 
-프로젝트의 안정적인 구현을 위해 기능 및 비기능 요구사항을 상세히 정의하였습니다. 이미지를 클릭하면 상세 PDF 문서로 이동합니다.
+프로젝트의 안정적인 구현을 위해 기능 및 비기능 요구사항을 상세히 정의하였습니다. 
 
 ### 🔹 Backend 요구사항
-[![Backend Requirements](./assets/backend_requirements.png)](./assets/백엔드_요구사항_정의서.pdf)
+[![Backend Requirements](./asset/backend_requirements.png)](./assets/백엔드_요구사항_정의서.pdf)
 
 ---
 
 ### 🔹 Frontend 요구사항
-[![Frontend Requirements](./assets/frontend_requirements.png)](./assets/프론트_요구사항_정의서.pdf)
+[![Frontend Requirements](./asset/frontend_requirements.png)](./assets/프론트_요구사항_정의서.pdf)
 
-> 💡 위 이미지를 클릭하면 원본 PDF 파일을 열람하실 수 있습니다.
+ 
+### 🔹 Architecture 다이어그램
+<img src="./asset/architecture-diagram-team3.png" alt="Architecture-diagram"/>
 ---
+
+## 🚀 추후 개발 방향성
+
+현재 프로젝트는 핵심 기능의 프로토타입 구현에 집중하였으며, 향후 다음과 같은 방향으로 시스템을 확장해 나갈 계획입니다.
+
+### 1. 계층적 작업 관리의 고도화 (Hierarchy Task Management)
+- **현황**: `Todo` / `Task` / `Issue`의 계층적 구조 중, 현재는 실행 단위인 **`Todo`** 기능이 구현되어 있습니다.
+- **개선 계획**: 
+  - `Issue` (큰 단위의 목표) ➡️ `Task` (중간 단위 작업) ➡️ `Todo` (실행 단위)로 이어지는 **3단계 계층 구조**를 완성합니다.
+  - 이를 통해 단순 할 일 관리를 넘어, 프로젝트 단위의 거시적인 업무 관리가 가능하도록 개선할 예정입니다.
+
+### 2. 협업 환경 및 확장성 강화 (Scalable Architecture for Team)
+- **현황**: **개인 사용자(Personal)** 를 위한 독립적인 작업 관리 환경은 구현이 완료되었습니다.
+- **개선 계획**:
+  - **다중 사용자(Multi-user) 및 협업(Collaboration)** 기능을 도입합니다.
+  - 팀 단위의 워크스페이스를 구축하여 이슈를 공유하고, 공동으로 작업을 관리할 수 있는 환경을 제공할 예정입니다.
+
+---
+
 ## 회고록
 
 ### 📝 정재우
