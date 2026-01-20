@@ -96,14 +96,25 @@ todo-dodo
 ### 🔹 Frontend 요구사항
 [![Frontend Requirements](./asset/frontend_requirements.png)](./assets/프론트_요구사항_정의서.pdf)
 
- 
+## 🏗️ 빌드 및 배포
+
 ### 🔹 Architecture 다이어그램
 <img src="./asset/architecture-diagram-team3.png" alt="Architecture-diagram"/>
+
+### 🔹 Pipeline 빌드 과정
+<img src="./asset/gif/1.pipe-line.gif">
+
+### 🔹 ArgoCD 배포 동기화
+<img src="./asset/gif/2.argocd.gif">
+
+### 🔹 프론트엔드 화면
+<img src="./asset/gif/3.todo.gif">
+
 ---
 
 ## 🚀 추후 개발 방향성
 
-현재 프로젝트는 핵심 기능의 프로토타입 구현에 집중하였으며, 향후 다음과 같은 방향으로 시스템을 확장해 나갈 계획입니다.
+현재 프로젝트는 핵심 기능의 프로토타입 구현에 집중하였으며, 향후 다음과 같은 방향으로 시스템을 확장해 나갈 예정임.
 
 ### 1. 계층적 작업 관리의 고도화 (Hierarchy Task Management)
 - **현황**: `Todo` / `Task` / `Issue`의 계층적 구조 중, 현재는 실행 단위인 **`Todo`** 기능이 구현되어 있습니다.
