@@ -51,6 +51,8 @@
 ### DevOps
 - **Container:** Docker
 - **CI/CD:** Jenkins
+- **File Update:** ArgoCD
+- **Deployment:** Kubernetes
 
 ## 🗂️ 프로젝트 구조
 
